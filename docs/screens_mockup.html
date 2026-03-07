@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BeeConnect32 — AMOLED Screen Mockups (536×240)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  /* ── Page ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: #1a1a1a;
+    font-family: 'Roboto', sans-serif;
+    color: #fff;
+    padding: 40px 32px 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+  }
+
+  h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: #F5BB00;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    color: #888;
+    margin-bottom: 48px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Screen wrapper ── */
+  .screen-group {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 48px;
+    width: 100%;
+    max-width: 620px;
+  }
+
+  .screen-block {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .screen-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #555;
+    padding-left: 2px;
+  }
+
+  /* The "physical" display bezel */
+  .bezel {
+    width: 556px;        /* 536 + 10px left/right */
+    height: 260px;       /* 240 + 10px top/bottom */
+    background: #111;
+    border-radius: 14px;
+    padding: 10px;
+    box-shadow:
+      0 0 0 1px #333,
+      0 8px 32px rgba(0,0,0,0.7),
+      0 2px 6px rgba(0,0,0,0.5);
+    position: relative;
+  }
+
+  /* The actual LCD area: 536×240 */
+  .lcd {
+    width: 536px;
+    height: 240px;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    font-family: 'Roboto', sans-serif;
+  }
+
+  /* ── Brand tokens ── */
+  :root {
+    --honey:    #F5BB00;
+    --teal:     #00A896;
+    --dark:     #2D2D2D;
+    --light-bg: #F8F9FA;
+    --red:      #E63946;
+  }
+
+  /* ══════════════════════════════════════════════
+     Screen 1 — Splash
+  ══════════════════════════════════════════════ */
+  .splash {
+    background: var(--honey);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .splash-logo-img {
+    height: 108px;
+    width: auto;
+    margin-bottom: 8px;
+    /* drop-shadow lifts the logo off the yellow bg */
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.25));
+  }
+
+  .splash-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 30px;
+    color: var(--dark);
+    letter-spacing: 0.02em;
+    margin-bottom: 4px;
+  }
+
+  .splash-version {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--dark);
+    opacity: 0.65;
+    letter-spacing: 0.08em;
+  }
+
+  .splash-tagline {
+    font-size: 11px;
+    color: var(--dark);
+    opacity: 0.45;
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* boot progress dots */
+  .boot-dots {
+    display: flex;
+    gap: 6px;
+    margin-top: 16px;
+  }
+  .boot-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--dark);
+    opacity: 0.25;
+  }
+  .boot-dot.active { opacity: 0.7; }
+  .boot-dot.done   { opacity: 0.45; background: var(--teal); }
+
+  /* ══════════════════════════════════════════════
+     Screen 2 — Main data
+  ══════════════════════════════════════════════ */
+  .main-screen {
+    background: var(--light-bg);
+    display: grid;
+    grid-template-rows: 36px 1fr 28px;
+    grid-template-columns: 1fr;
+  }
+
+  /* Top bar */
+  .top-bar {
+    background: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+  }
+
+  .top-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .top-bar-logo {
+    height: 22px;
+    width: auto;
+    /* keep brand colours visible on dark background */
+    filter: drop-shadow(0 0 2px rgba(0,0,0,0.6));
+  }
+
+  .top-bar-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--honey);
+    letter-spacing: 0.06em;
+  }
+
+  .top-bar-icons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Wi-Fi icon (CSS bars) */
+  .wifi-icon {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    height: 14px;
+  }
+  .wifi-bar {
+    width: 3px;
+    background: #4caf50;
+    border-radius: 1px;
+  }
+  .wifi-bar:nth-child(1) { height: 4px; }
+  .wifi-bar:nth-child(2) { height: 7px; }
+  .wifi-bar:nth-child(3) { height: 10px; }
+  .wifi-bar:nth-child(4) { height: 13px; }
+
+  /* Battery icon */
+  .batt-icon {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+  .batt-body {
+    width: 20px;
+    height: 10px;
+    border: 1.5px solid rgba(255,255,255,0.6);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+  }
+  .batt-fill {
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    bottom: 1px;
+    width: 75%;
+    background: #4caf50;
+    border-radius: 1px;
+  }
+  .batt-tip {
+    width: 2px;
+    height: 5px;
+    background: rgba(255,255,255,0.5);
+    border-radius: 0 1px 1px 0;
+  }
+  .batt-pct {
+    font-size: 10px;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Roboto', sans-serif;
+  }
+
+  /* Cards area */
+  .cards-area {
+    display: flex;
+    gap: 10px;
+    padding: 10px 12px;
+    align-items: stretch;
+  }
+
+  .data-card {
+    flex: 1;
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .card-teal  { background: var(--teal); }
+  .card-honey { background: var(--honey); }
+
+  .card-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.75;
+  }
+
+  .card-teal  .card-label { color: #fff; }
+  .card-honey .card-label { color: var(--dark); }
+
+  .card-value {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    line-height: 1;
+  }
+
+  .card-teal  .card-value { color: #fff; }
+  .card-honey .card-value { color: var(--dark); }
+
+  .card-unit {
+    font-family: 'Roboto', sans-serif;
+    font-size: 13px;
+    font-weight: 400;
+    opacity: 0.65;
+  }
+
+  .card-teal  .card-unit { color: #fff; }
+  .card-honey .card-unit { color: var(--dark); }
+
+  .card-icon {
+    font-size: 20px;
+    opacity: 0.35;
+    align-self: flex-end;
+  }
+
+  .card-bottom-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  /* Trend arrow */
+  .trend {
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: 700;
+  }
+  .trend-up   { background: rgba(255,255,255,0.2); color: #fff; }
+  .trend-down { background: rgba(0,0,0,0.1); color: var(--dark); }
+
+  /* Status bar */
+  .status-bar {
+    background: var(--dark);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+  }
+  .status-text {
+    font-size: 10px;
+    color: rgba(255,255,255,0.45);
+    letter-spacing: 0.04em;
+  }
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4caf50;
+  }
+
+  /* ══════════════════════════════════════════════
+     Screen 3 — OTA progress
+  ══════════════════════════════════════════════ */
+  .ota-screen {
+    background: var(--dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .ota-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  .ota-spinner {
+    width: 22px;
+    height: 22px;
+    border: 3px solid rgba(255,255,255,0.15);
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .ota-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #fff;
+    letter-spacing: 0.04em;
+  }
+
+  .ota-subtitle {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 20px;
+    letter-spacing: 0.05em;
+  }
+
+  .ota-bar-track {
+    width: 400px;
+    height: 10px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 6px;
+    overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .ota-bar-fill {
+    height: 100%;
+    width: 67%;
+    background: linear-gradient(90deg, var(--teal), #00d4bc);
+    border-radius: 6px;
+    position: relative;
+    overflow: hidden;
+  }
+  /* shimmer */
+  .ota-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; left: -60px;
+    width: 60px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+  @keyframes shimmer { to { left: 110%; } }
+
+  .ota-stats {
+    display: flex;
+    justify-content: space-between;
+    width: 400px;
+  }
+  .ota-pct {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--teal);
+  }
+  .ota-size {
+    font-size: 11px;
+    color: rgba(255,255,255,0.35);
+    letter-spacing: 0.04em;
+  }
+
+  .ota-version-row {
+    margin-top: 18px;
+    display: flex;
+    gap: 16px;
+  }
+  .ota-version-chip {
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    letter-spacing: 0.06em;
+    font-family: 'Roboto', sans-serif;
+  }
+  .chip-current {
+    background: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.4);
+  }
+  .chip-arrow {
+    color: rgba(255,255,255,0.25);
+    font-size: 12px;
+    line-height: 20px;
+  }
+  .chip-new {
+    background: rgba(0,168,150,0.2);
+    color: var(--teal);
+    border: 1px solid rgba(0,168,150,0.3);
+  }
+
+  /* ══════════════════════════════════════════════
+     Wizard shared
+  ══════════════════════════════════════════════ */
+  .wiz-screen {
+    background: var(--dark);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    position: relative;
+  }
+
+  .wiz-step-label {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 11px;
+    color: rgba(255,255,255,0.28);
+    letter-spacing: 0.08em;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+  }
+
+  .wiz-icon-circle {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: rgba(0,168,150,0.15);
+    border: 2px solid rgba(0,168,150,0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    margin-bottom: 14px;
+  }
+
+  .wiz-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: #fff;
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .wiz-body {
+    font-size: 12px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 22px;
+    letter-spacing: 0.03em;
+    text-align: center;
+    max-width: 340px;
+    line-height: 1.5;
+  }
+
+  .wiz-btn {
+    padding: 10px 36px;
+    border-radius: 24px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 0.04em;
+    border: none;
+    cursor: default;
+  }
+
+  .wiz-btn-teal   { background: var(--teal);  color: #fff; }
+  .wiz-btn-honey  { background: var(--honey); color: var(--dark); }
+
+  /* ── Weight selector (step 2) ── */
+  .wiz-selector-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+
+  .wiz-adj-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1.5px solid rgba(255,255,255,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: 700;
+    color: rgba(255,255,255,0.7);
+    cursor: default;
+    font-family: 'Montserrat', sans-serif;
+  }
+
+  .wiz-weight-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 110px;
+  }
+
+  .wiz-weight-value {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 36px;
+    color: var(--honey);
+    line-height: 1;
+  }
+
+  .wiz-weight-unit {
+    font-size: 12px;
+    color: rgba(255,255,255,0.4);
+    letter-spacing: 0.06em;
+    margin-top: 4px;
+  }
+
+  /* ── Taring spinner screen ── */
+  .wiz-taring-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0,168,150,0.2);
+    border-top-color: var(--teal);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 18px;
+  }
+
+  /* ── Done screen checkmark ── */
+  .wiz-check-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(0,168,150,0.18);
+    border: 2px solid var(--teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    font-size: 26px;
+    color: var(--teal);
+  }
+
+  .wiz-ref-chip {
+    background: rgba(0,168,150,0.15);
+    border: 1px solid rgba(0,168,150,0.3);
+    border-radius: 16px;
+    padding: 4px 14px;
+    font-size: 12px;
+    color: var(--teal);
+    letter-spacing: 0.05em;
+    margin-bottom: 18px;
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+  }
+
+  /* ══════════════════════════════════════════════
+     Screen 4 — Error
+  ══════════════════════════════════════════════ */
+  .error-screen {
+    background: var(--red);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .error-circle {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  .error-x {
+    font-size: 26px;
+    font-weight: 700;
+    font-family: 'Montserrat', sans-serif;
+    color: #fff;
+    line-height: 1;
+  }
+
+  .error-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 6px;
+    letter-spacing: 0.02em;
+  }
+
+  .error-msg {
+    font-size: 13px;
+    color: rgba(255,255,255,0.65);
+    margin-bottom: 22px;
+    letter-spacing: 0.03em;
+  }
+
+  .error-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 20px;
+    padding: 6px 16px;
+  }
+  .error-footer-text {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    letter-spacing: 0.05em;
+  }
+  .sleep-countdown {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    color: rgba(255,255,255,0.75);
+  }
+</style>
+</head>
+<body>
+
+<h1>BeeConnect32</h1>
+<p class="subtitle">AMOLED Display Mockups &nbsp;·&nbsp; 536 × 240 px &nbsp;·&nbsp; RM67162 QSPI</p>
+
+<div class="screen-group">
+
+  <!-- ══════════════════ 1. SPLASH ══════════════════ -->
+  <div class="screen-block">
+    <div class="screen-label">① Splash — boot</div>
+    <div class="bezel">
+      <div class="lcd splash">
+        <img src="images/BeeConnect32_logo.png" class="splash-logo-img" alt="BeeConnect32 logo">
+        <div class="splash-title">BeeConnect32</div>
+        <div class="splash-version">v 1.0.0</div>
+        <div class="splash-tagline">Beehive Monitor · ESP32-S3</div>
+        <div class="boot-dots">
+          <div class="boot-dot done"></div>
+          <div class="boot-dot done"></div>
+          <div class="boot-dot active"></div>
+          <div class="boot-dot"></div>
+          <div class="boot-dot"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 2. MAIN ══════════════════ -->
+  <div class="screen-block">
+    <div class="screen-label">② Main — live sensor data</div>
+    <div class="bezel">
+      <div class="lcd main-screen">
+
+        <!-- Top bar -->
+        <div class="top-bar">
+          <div class="top-bar-left">
+            <img src="images/BeeConnect32_logo.png" class="top-bar-logo" alt="">
+            <span class="top-bar-title">BeeConnect32</span>
+          </div>
+          <div class="top-bar-icons">
+            <div class="wifi-icon">
+              <div class="wifi-bar"></div>
+              <div class="wifi-bar"></div>
+              <div class="wifi-bar"></div>
+              <div class="wifi-bar"></div>
+            </div>
+            <div class="batt-icon">
+              <div class="batt-body"><div class="batt-fill"></div></div>
+              <div class="batt-tip"></div>
+              <span class="batt-pct">87%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="cards-area">
+
+          <!-- Weight -->
+          <div class="data-card card-teal">
+            <span class="card-label">⚖ Weight</span>
+            <div>
+              <div class="card-value">12.54</div>
+              <div class="card-unit">kilograms</div>
+            </div>
+            <div class="card-bottom-row">
+              <span class="trend trend-up">▲ +0.3 kg</span>
+              <span class="card-icon">🍯</span>
+            </div>
+          </div>
+
+          <!-- Temperature -->
+          <div class="data-card card-honey">
+            <span class="card-label">🌡 Temperature</span>
+            <div>
+              <div class="card-value">32.5°</div>
+              <div class="card-unit">Celsius — inside hive</div>
+            </div>
+            <div class="card-bottom-row">
+              <span class="trend trend-down">▼ −0.4°</span>
+              <span class="card-icon">🐝</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Status bar -->
+        <div class="status-bar">
+          <span class="status-text">Last upload: 14:22:07 · RSSI −52 dBm</span>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="status-dot"></div>
+            <span class="status-text">ONLINE</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 3. OTA ══════════════════ -->
+  <div class="screen-block">
+    <div class="screen-label">③ OTA — firmware update in progress</div>
+    <div class="bezel">
+      <div class="lcd ota-screen">
+        <div class="ota-header">
+          <div class="ota-spinner"></div>
+          <span class="ota-title">OTA Update</span>
+        </div>
+        <div class="ota-subtitle">Flashing to slot ota_1 — do not power off</div>
+        <div class="ota-bar-track">
+          <div class="ota-bar-fill"></div>
+        </div>
+        <div class="ota-stats">
+          <span class="ota-pct">67%  ·  2.35 MB / 3.50 MB</span>
+          <span class="ota-size">~12 s remaining</span>
+        </div>
+        <div class="ota-version-row">
+          <span class="ota-version-chip chip-current">v 1.0.0 (current)</span>
+          <span class="chip-arrow">→</span>
+          <span class="ota-version-chip chip-new">v 1.1.0 (incoming)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 4. ERROR ══════════════════ -->
+  <div class="screen-block">
+    <div class="screen-label">④ Error — upload failure</div>
+    <div class="bezel">
+      <div class="lcd error-screen">
+        <div class="error-circle">
+          <span class="error-x">✕</span>
+        </div>
+        <div class="error-title">Upload Failed</div>
+        <div class="error-msg">BEEP API returned HTTP 503 · check connection</div>
+        <div class="error-footer">
+          <span class="error-footer-text">Retrying next wake in</span>
+          <span class="sleep-countdown">15:00</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════ 5. WIZARD STEP 1 — TARE ══════════════════ -->
+  <div class="screen-block">
+    <div class="screen-label">⑤ Calibration Wizard — Step 1/3: Remove weight</div>
+    <div class="bezel">
+      <div class="lcd wiz-screen">
+        <span class="wiz-step-label">1 / 3</span>
+        <div class="wiz-icon-circle">⚖</div>
+        <div class="wiz-title">Tare Scale</div>
+        <div class="wiz-body">Remove all weight from the scale and place it on a flat surface, then tap Continue.</div>
+        <div class="wiz-btn wiz-btn-teal">Continue</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 5b. WIZARD — TARING SPINNER ══════════════════ -->
+  <div class="screen-block">
+    <div class="screen-label">⑤b Calibration Wizard — Taring in progress</div>
+    <div class="bezel">
+      <div class="lcd wiz-screen">
+        <div class="wiz-taring-spinner"></div>
+        <div class="wiz-title">Taring…</div>
+        <div class="wiz-body">Sampling 10 readings — please wait</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 6. WIZARD STEP 2 — WEIGHT SELECTOR ══════════════════ -->
+  <div class="screen-block">
+    <div class="screen-label">⑥ Calibration Wizard — Step 2/3: Enter known weight</div>
+    <div class="bezel">
+      <div class="lcd wiz-screen">
+        <span class="wiz-step-label">2 / 3</span>
+        <div class="wiz-title">Place Reference Weight</div>
+        <div class="wiz-body">Put the known weight on the scale, then dial in its mass below.</div>
+        <div class="wiz-selector-row">
+          <div class="wiz-adj-btn">−</div>
+          <div class="wiz-weight-box">
+            <span class="wiz-weight-value">2.0</span>
+            <span class="wiz-weight-unit">kilograms</span>
+          </div>
+          <div class="wiz-adj-btn">+</div>
+        </div>
+        <div class="wiz-btn wiz-btn-teal">Confirm</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════ 7. WIZARD STEP 3 — DONE ══════════════════ -->
+  <div class="screen-block">
+    <div class="screen-label">⑦ Calibration Wizard — Step 3/3: Saved</div>
+    <div class="bezel">
+      <div class="lcd wiz-screen">
+        <span class="wiz-step-label">3 / 3</span>
+        <div class="wiz-check-circle">✓</div>
+        <div class="wiz-title">Calibration Saved</div>
+        <div class="wiz-ref-chip">Reference: 2.0 kg</div>
+        <div class="wiz-body">Factor stored to NVS. The scale is ready to use.</div>
+        <div class="wiz-btn wiz-btn-honey">Done</div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /screen-group -->
+
+<!-- ══════════════════════════════════════════════════════
+     Provisioning Portal — phone browser mockup
+══════════════════════════════════════════════════════ -->
+<div style="margin-top:64px;width:100%;max-width:620px;display:flex;flex-direction:column;gap:10px;">
+  <div class="screen-label" style="color:#555;font-family:'Montserrat',sans-serif;font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;">
+    ⑧ Provisioning — captive portal (phone browser)
+  </div>
+
+  <!-- Phone shell -->
+  <div style="
+    width:320px;
+    background:#111;
+    border-radius:36px;
+    padding:12px 10px;
+    box-shadow:0 0 0 1px #333,0 12px 40px rgba(0,0,0,.7);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:0;
+  ">
+    <!-- Status bar -->
+    <div style="width:100%;display:flex;justify-content:space-between;align-items:center;padding:0 14px 8px;font-size:11px;color:rgba(255,255,255,.45);font-family:'Roboto',sans-serif;">
+      <span>9:41</span>
+      <div style="width:80px;height:6px;background:#222;border-radius:3px;"></div>
+      <span>&#9679;&#9679;&#9679;</span>
+    </div>
+
+    <!-- Browser chrome -->
+    <div style="
+      width:100%;
+      background:#1e1e1e;
+      border-radius:10px 10px 0 0;
+      padding:8px 10px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+    ">
+      <div style="width:8px;height:8px;border-radius:50%;background:#444;flex-shrink:0;"></div>
+      <div style="flex:1;background:#2a2a2a;border-radius:6px;padding:5px 10px;font-size:11px;color:#aaa;font-family:'Roboto',sans-serif;letter-spacing:.02em;">
+        192.168.4.1
+      </div>
+    </div>
+
+    <!-- Page content -->
+    <div style="
+      width:100%;
+      background:#F8F9FA;
+      border-radius:0 0 26px 26px;
+      padding:24px 16px 28px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+    ">
+      <!-- Card -->
+      <div style="
+        background:#fff;
+        border-radius:12px;
+        padding:22px 20px 20px;
+        box-shadow:0 4px 16px rgba(0,0,0,.08);
+        width:100%;
+        box-sizing:border-box;
+      ">
+        <!-- Logo row -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          <img src="images/BeeConnect32_logo.png" style="height:28px;width:auto;" alt="">
+          <span style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:#2D2D2D;">BeeConnect32</span>
+        </div>
+        <p style="font-family:'Roboto',sans-serif;font-size:12px;color:#888;margin:0 0 16px;">Enter your Wi-Fi credentials and BEEP API key.</p>
+
+        <!-- Wi-Fi section -->
+        <div style="font-size:11px;font-weight:700;color:#555;font-family:'Roboto',sans-serif;margin-bottom:4px;">Wi-Fi SSID</div>
+        <div style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid #ccc;border-radius:6px;font-size:13px;color:#2D2D2D;font-family:'Roboto',sans-serif;margin-bottom:10px;background:#fff;">MyHomeNetwork</div>
+
+        <div style="font-size:11px;font-weight:700;color:#555;font-family:'Roboto',sans-serif;margin-bottom:4px;">Wi-Fi Password</div>
+        <div style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid #ccc;border-radius:6px;font-size:13px;color:#aaa;font-family:'Roboto',sans-serif;margin-bottom:10px;background:#fff;letter-spacing:.15em;">••••••••••</div>
+
+        <!-- Divider -->
+        <div style="border-top:1px solid #eee;margin:12px 0;"></div>
+
+        <!-- BEEP key section -->
+        <div style="font-size:11px;font-weight:700;color:#555;font-family:'Roboto',sans-serif;margin-bottom:4px;">BEEP API Key</div>
+        <div style="width:100%;box-sizing:border-box;padding:8px 10px;border:1.5px solid #00A896;border-radius:6px;font-size:12px;color:#2D2D2D;font-family:'Roboto',sans-serif;margin-bottom:4px;background:#f0fffe;word-break:break-all;">a3f8c2e1d9b047e6…</div>
+        <div style="font-size:10px;color:#aaa;font-family:'Roboto',sans-serif;margin-bottom:14px;">Found in the BEEP app under Settings → Hardware → API key</div>
+
+        <!-- Submit button -->
+        <div style="
+          background:#F5BB00;
+          color:#2D2D2D;
+          border-radius:6px;
+          padding:11px;
+          text-align:center;
+          font-family:'Montserrat',sans-serif;
+          font-weight:700;
+          font-size:14px;
+          width:100%;
+          box-sizing:border-box;
+        ">Save &amp; Connect</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
