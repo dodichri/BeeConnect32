@@ -72,10 +72,11 @@ BeeConnect32/
 - API key from `Preferences` namespace `beep` takes precedence over compile-time `BEEP_API_KEY`.
 
 ### OTA
-- POST to `http://<device-ip>:3232/ota` while device is awake (~10–30 s per cycle)
-- Requires `Authorization: Bearer <OTA_AUTH_TOKEN>`
-- Optional `X-Firmware-Version` (rejects downgrades unless `?force=true`) and `X-Firmware-SHA256` headers
-- Rollback on failed boot via last-known-good partition in `Preferences`
+- Pull-based from GitHub releases: device queries `https://api.github.com/repos/dodichri/BeeConnect32/releases/latest` on each wake
+- Compares `tag_name` (e.g. `v1.2.0`) against `FIRMWARE_VERSION` using semver; skips if up to date
+- Downloads `firmware.bin` release asset via HTTPS (follows GitHub → S3 redirect), streams to `Update` library
+- Shows OTA progress screen during download; reboots on success
+- To release: tag commit as `vMAJOR.MINOR.PATCH`, attach `firmware.bin` from `.pio/build/.../firmware.bin` as a release asset
 
 ### Versioning
 - Bump `include/version.h` for every release (MAJOR/MINOR/PATCH + FIRMWARE_VERSION string)

@@ -4,6 +4,7 @@
 #include "display.h"
 #include "sensors.h"
 #include "provisioning.h"
+#include "ota.h"
 
 #define BOOT_PIN      0
 #define BOOT_HOLD_MS  3000
@@ -38,6 +39,11 @@ void setup()
     }
     if (!provisioning_connect_sta()) {
         // Error shown by connect_sta(); continue to allow offline display
+    }
+
+    // ── OTA check ──
+    if (WiFi.status() == WL_CONNECTED) {
+        ota_check_and_update();  // reboots if update flashed; returns otherwise
     }
 
     // ── Sensors init ──

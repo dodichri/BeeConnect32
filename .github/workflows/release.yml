@@ -1,0 +1,78 @@
+name: Build & Release Firmware
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  build:
+    name: Build firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PlatformIO
+        run: pip install platformio
+
+      # secrets.h holds compile-time credential fallbacks only.
+      # Real credentials are provisioned at runtime via the captive portal.
+      - name: Create secrets.h (empty fallbacks)
+        run: |
+          cat > include/secrets.h << 'EOF'
+          #pragma once
+          #define WIFI_SSID     ""
+          #define WIFI_PASSWORD ""
+          #define BEEP_API_KEY  ""
+          EOF
+
+      - name: Extract version from tag
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
+
+      - name: Update version.h from tag
+        run: |
+          TAG="${GITHUB_REF_NAME#v}"
+          MAJOR=$(echo $TAG | cut -d. -f1)
+          MINOR=$(echo $TAG | cut -d. -f2)
+          PATCH=$(echo $TAG | cut -d. -f3)
+          cat > include/version.h << EOF
+          #pragma once
+          #define FIRMWARE_MAJOR $MAJOR
+          #define FIRMWARE_MINOR $MINOR
+          #define FIRMWARE_PATCH $PATCH
+          #define FIRMWARE_VERSION "$TAG"
+          EOF
+
+      - name: Build firmware
+        run: pio run
+
+      - name: Rename firmware artifact
+        run: |
+          cp .pio/build/lilygo-t-display-s3-amoled-plus/firmware.bin \
+             firmware-${{ steps.version.outputs.version }}.bin
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: BeeConnect32 v${{ steps.version.outputs.version }}
+          body: |
+            ## BeeConnect32 v${{ steps.version.outputs.version }}
+
+            ### Installing via OTA
+            Devices already running BeeConnect32 will update automatically on their next wake cycle.
+
+            ### Manual flash
+            ```bash
+            pip install esptool
+            esptool.py --chip esp32s3 --port /dev/ttyACM0 write_flash 0x10000 firmware-${{ steps.version.outputs.version }}.bin
+            ```
+          files: firmware-${{ steps.version.outputs.version }}.bin
+          fail_on_unmatched_files: true
