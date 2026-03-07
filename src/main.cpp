@@ -1,10 +1,12 @@
 #include <Arduino.h>
+#include <WiFi.h>
 #include "version.h"
 #include "display.h"
 #include "sensors.h"
+#include "provisioning.h"
 
-#define BOOT_PIN       0
-#define BOOT_HOLD_MS   3000   // hold duration to trigger recalibration
+#define BOOT_PIN      0
+#define BOOT_HOLD_MS  3000
 
 void setup()
 {
@@ -15,7 +17,7 @@ void setup()
     display_init();
     display_show_splash(FIRMWARE_VERSION);
 
-    // ── BOOT button check (held during splash → force recalibration) ──
+    // ── BOOT button: hold during splash → force recalibration ──
     pinMode(BOOT_PIN, INPUT_PULLUP);
     bool force_cal = false;
     if (digitalRead(BOOT_PIN) == LOW) {
@@ -30,6 +32,14 @@ void setup()
         }
     }
 
+    // ── Wi-Fi provisioning ──
+    if (!provisioning_has_credentials()) {
+        provisioning_start_portal();  // blocks until saved, then reboots
+    }
+    if (!provisioning_connect_sta()) {
+        // Error shown by connect_sta(); continue to allow offline display
+    }
+
     // ── Sensors init ──
     if (!sensors_init()) {
         display_show_error("Sensor init failed.\nCheck HX711 wiring.");
@@ -42,15 +52,17 @@ void setup()
     }
 
     // ── Read sensors ──
-    float temp_c   = sensors_read_temp_c();
-    float weight_g = sensors_read_weight_g();
+    float temp_c    = sensors_read_temp_c();
+    float weight_g  = sensors_read_weight_g();
     float weight_kg = isnan(weight_g) ? 0.0f : weight_g / 1000.0f;
     if (isnan(temp_c)) temp_c = 0.0f;
 
     // ── Update display ──
-    display_show_main(weight_kg, temp_c, 0, 100);
+    int rssi = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
+    display_show_main(weight_kg, temp_c, rssi, 100);
 
-    Serial.printf("Weight: %.1f g  Temp: %.2f C\n", weight_g, temp_c);
+    Serial.printf("Weight: %.1f g  Temp: %.2f C  RSSI: %d%%\n",
+                  weight_g, temp_c, rssi);
 }
 
 void loop()
