@@ -1,5 +1,6 @@
 #include "ota.h"
 #include "display.h"
+#include "logger.h"
 #include "version.h"
 #include <HTTPClient.h>
 #include <WiFiClientSecure.h>
@@ -39,18 +40,18 @@ static int _fetch_release_info(String &out_tag, String &out_url)
     https.addHeader("Accept", "application/vnd.github+json");
 
     if (!https.begin(client, GITHUB_API_URL)) {
-        Serial.println("[ota] begin() failed");
+        LOG_ERROR("OTA begin() failed");
         return -1;
     }
 
     int code = https.GET();
     if (code == 404) {
-        Serial.println("[ota] No releases published yet — skipping OTA");
+        LOG_INFO("No releases published yet — skipping OTA");
         https.end();
         return 0;
     }
     if (code != 200) {
-        Serial.printf("[ota] API returned HTTP %d\n", code);
+        LOG_ERROR("OTA API returned HTTP %d", code);
         https.end();
         return -1;
     }
@@ -67,7 +68,7 @@ static int _fetch_release_info(String &out_tag, String &out_url)
     https.end();
 
     if (err) {
-        Serial.printf("[ota] JSON error: %s\n", err.c_str());
+        LOG_ERROR("OTA JSON error: %s", err.c_str());
         return -1;
     }
 
@@ -82,11 +83,11 @@ static int _fetch_release_info(String &out_tag, String &out_url)
     }
 
     if (out_tag.isEmpty() || out_url.isEmpty()) {
-        Serial.println("[ota] Missing tag or asset in API response");
+        LOG_ERROR("OTA missing tag or asset in API response");
         return -1;
     }
 
-    Serial.printf("[ota] Latest: %s  Asset: %s\n", out_tag.c_str(), out_url.c_str());
+    LOG_INFO("OTA latest: %s  asset: %s", out_tag.c_str(), out_url.c_str());
     return 1;
 }
 
@@ -102,22 +103,22 @@ static OtaResult _download_and_flash(const String &url)
     dl.addHeader("User-Agent", USER_AGENT);
 
     if (!dl.begin(client, url)) {
-        Serial.println("[ota] download begin() failed");
+        LOG_ERROR("OTA download begin() failed");
         return OTA_FAILED;
     }
 
     int code = dl.GET();
     if (code != 200) {
-        Serial.printf("[ota] download HTTP %d\n", code);
+        LOG_ERROR("OTA download HTTP %d", code);
         dl.end();
         return OTA_FAILED;
     }
 
     int total = dl.getSize();  // -1 if unknown
-    Serial.printf("[ota] Firmware size: %d bytes\n", total);
+    LOG_INFO("OTA firmware size: %d bytes", total);
 
     if (!Update.begin(total > 0 ? total : UPDATE_SIZE_UNKNOWN)) {
-        Serial.printf("[ota] Update.begin failed: %s\n", Update.errorString());
+        LOG_ERROR("OTA Update.begin failed: %s", Update.errorString());
         dl.end();
         return OTA_FAILED;
     }
@@ -131,7 +132,7 @@ static OtaResult _download_and_flash(const String &url)
         if (avail > 0) {
             int n = stream->readBytes(buf, min(avail, (int)sizeof(buf)));
             if (Update.write(buf, n) != (size_t)n) {
-                Serial.println("[ota] write error");
+                LOG_ERROR("OTA write error");
                 dl.end();
                 Update.abort();
                 return OTA_FAILED;
@@ -139,22 +140,22 @@ static OtaResult _download_and_flash(const String &url)
             written += n;
             if (total > 0) display_show_ota_progress(written * 100 / total);
         }
-        delay(1);
+        display_tick();
     }
 
     dl.end();
 
     if (!Update.end(true)) {
-        Serial.printf("[ota] Update.end failed: %s\n", Update.errorString());
+        LOG_ERROR("OTA Update.end failed: %s", Update.errorString());
         return OTA_FAILED;
     }
 
     if (!Update.isFinished()) {
-        Serial.println("[ota] Update did not finish");
+        LOG_ERROR("OTA update did not finish");
         return OTA_FAILED;
     }
 
-    Serial.printf("[ota] Flash complete — %d bytes written. Rebooting...\n", written);
+    LOG_INFO("OTA flash complete — %d bytes written. Rebooting...", written);
     display_show_ota_progress(100);
     delay(1000);
     ESP.restart();
@@ -166,7 +167,7 @@ static OtaResult _download_and_flash(const String &url)
 
 OtaResult ota_check_and_update(void)
 {
-    Serial.println("[ota] Checking GitHub for updates...");
+    LOG_INFO("Checking GitHub for updates...");
 
     String tag, url;
     int rc = _fetch_release_info(tag, url);
@@ -174,11 +175,11 @@ OtaResult ota_check_and_update(void)
     if (rc < 0)  return OTA_FAILED;
 
     if (!_is_newer(tag.c_str())) {
-        Serial.printf("[ota] Up to date (v%s)\n", FIRMWARE_VERSION);
+        LOG_INFO("OTA up to date (v%s)", FIRMWARE_VERSION);
         return OTA_UP_TO_DATE;
     }
 
-    Serial.printf("[ota] New release %s available — downloading...\n", tag.c_str());
+    LOG_INFO("New release %s available — downloading...", tag.c_str());
     display_show_ota_progress(0);
 
     return _download_and_flash(url);

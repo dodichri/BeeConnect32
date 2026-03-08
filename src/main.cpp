@@ -28,8 +28,9 @@ static void run_sensor_only_mode()
         float weight_kg = isnan(weight_g) ? 0.0f : weight_g / 1000.0f;
         if (isnan(temp_c)) temp_c = 0.0f;
 
-        int rssi = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
-        display_show_main(weight_kg, temp_c, rssi, battery_pct());
+        int      rssi   = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
+        uint16_t bat_mv = battery_voltage_mv();
+        display_show_main(weight_kg, temp_c, rssi, battery_pct_from_mv(bat_mv));
         display_set_status("Sensor mode - reboot to exit", true);
 
         LOG_INFO("Sensor-only: %.1f g  %.2f C", weight_g, temp_c);
@@ -112,7 +113,8 @@ void setup()
     // ── Sensors init ──
     if (!sensors_init()) {
         display_show_error("Sensor init failed.\nCheck HX711 wiring.");
-        delay(5000);
+        uint32_t err_until = millis() + 5000;
+        while (millis() < err_until) { display_tick(); delay(5); }
     }
 
     // ── Calibration ──
@@ -133,9 +135,9 @@ void setup()
     if (isnan(temp_c)) temp_c = 0.0f;
 
     // ── Update display ──
-    int rssi    = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
+    int      rssi   = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
     uint16_t bat_mv = battery_voltage_mv();
-    display_show_main(weight_kg, temp_c, rssi, battery_pct());
+    display_show_main(weight_kg, temp_c, rssi, battery_pct_from_mv(bat_mv));
 
     LOG_INFO("Weight: %.1f g  Temp: %.2f C  RSSI: %d%%", weight_g, temp_c, rssi);
 

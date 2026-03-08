@@ -1,5 +1,6 @@
 #include "sensors.h"
 #include "display.h"
+#include "logger.h"
 #include <OneWire.h>
 #include <DallasTemperature.h>
 #include <HX711.h>
@@ -24,15 +25,15 @@ bool sensors_init(void)
     // DS18B20
     _dallas.begin();
     uint8_t count = _dallas.getDeviceCount();
-    Serial.printf("[sensors] DS18B20 devices found: %d\n", count);
+    LOG_INFO("DS18B20 devices found: %d", count);
 
     // HX711
     _scale.begin(HX711_DOUT, HX711_SCK);
     if (!_scale.wait_ready_timeout(2000)) {
-        Serial.println("[sensors] HX711 not ready");
+        LOG_ERROR("HX711 not ready");
         return false;
     }
-    Serial.println("[sensors] HX711 ready");
+    LOG_INFO("HX711 ready");
 
     // Restore calibration from NVS if available
     _prefs.begin("hx711", true);  // read-only
@@ -41,7 +42,7 @@ bool sensors_init(void)
         long  tare = _prefs.getLong("tare", 0);
         _scale.set_scale(cf);
         _scale.set_offset(tare);
-        Serial.printf("[sensors] Calibration loaded: factor=%.4f tare=%ld\n", cf, tare);
+        LOG_INFO("Calibration loaded: factor=%.4f tare=%ld", cf, tare);
     }
     _prefs.end();
 
@@ -65,10 +66,10 @@ float sensors_read_temp_c(void)
     _dallas.requestTemperatures();
     float t = _dallas.getTempCByIndex(0);
     if (t == DEVICE_DISCONNECTED_C) {
-        Serial.println("[sensors] DS18B20 read error");
+        LOG_ERROR("DS18B20 read error");
         return NAN;
     }
-    Serial.printf("[sensors] Temperature: %.2f C\n", t);
+    LOG_INFO("Temperature: %.2f C", t);
     return t;
 }
 
@@ -77,15 +78,15 @@ float sensors_read_temp_c(void)
 float sensors_read_weight_g(void)
 {
     if (!sensors_is_calibrated()) {
-        Serial.println("[sensors] Scale not calibrated");
+        LOG_WARN("Scale not calibrated");
         return NAN;
     }
     if (!_scale.wait_ready_timeout(1000)) {
-        Serial.println("[sensors] HX711 timeout");
+        LOG_ERROR("HX711 timeout");
         return NAN;
     }
     float g = _scale.get_units(5);
-    Serial.printf("[sensors] Weight: %.1f g\n", g);
+    LOG_INFO("Weight: %.1f g", g);
     return g;
 }
 
@@ -108,15 +109,12 @@ void sensors_run_calibration_wizard(void)
         display_tick();
 
         if (_cal_state == CAL_DO_TARE) {
-            Serial.println("[sensors] Taring...");
-
-            // Show a simple "Taring..." message while sampling
-            // (reuse the tare screen — the button is gone after tap)
+            LOG_INFO("Taring...");
             _scale.set_scale();           // reset scale factor to 1
             _scale.tare(10);              // average 10 readings as zero
 
             long tare_offset = _scale.get_offset();
-            Serial.printf("[sensors] Tare offset: %ld\n", tare_offset);
+            LOG_INFO("Tare offset: %ld", tare_offset);
 
             _cal_state = CAL_WAIT_WEIGHT;
             display_show_cal_weight(_on_weight_confirm);
@@ -124,14 +122,14 @@ void sensors_run_calibration_wizard(void)
 
         if (_cal_state == CAL_DO_WEIGHT) {
             float ref_g = _cal_ref_g;
-            Serial.printf("[sensors] Calibrating with %.1f g reference\n", ref_g);
+            LOG_INFO("Calibrating with %.1f g reference", ref_g);
 
             // Raw value with reference weight on scale (scale factor still 1)
             float raw = _scale.get_value(10);
             float cal_factor = raw / ref_g;
             _scale.set_scale(cal_factor);
 
-            Serial.printf("[sensors] cal_factor=%.4f  raw=%.1f\n", cal_factor, raw);
+            LOG_INFO("cal_factor=%.4f  raw=%.1f", cal_factor, raw);
 
             // Persist to NVS
             _prefs.begin("hx711", false);

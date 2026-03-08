@@ -1,4 +1,5 @@
 #include "display.h"
+#include "logger.h"
 #include <LV_Helper.h>
 #include <lvgl.h>
 #include "logo.h"
@@ -97,7 +98,7 @@ void display_init(void)
 {
     // T-Display S3 AMOLED Plus: CST816S (0x15) + BM8563 RTC (0x51) = SPI variant
     if (!_board.beginAMOLED_191_SPI()) {
-        Serial.println("[display] beginAMOLED_191_SPI failed");
+        LOG_ERROR("beginAMOLED_191_SPI failed");
         return;
     }
     _board.setRotation(2);  // 180° — physical mounting orientation
@@ -162,7 +163,8 @@ void display_show_splash(const char *version)
     }
 
     lv_task_handler();
-    delay(2000);
+    uint32_t splash_end = millis() + 2000;
+    while (millis() < splash_end) { lv_task_handler(); delay(5); }
 }
 
 // ── Main screen ───────────────────────────────────────────────────────────────
@@ -594,5 +596,6 @@ void display_show_cal_done(float ref_g)
     wiz_pill_btn(scr, "Done", CLR_YELLOW, CLR_DARK);
 
     lv_task_handler();
-    delay(2000);
+    uint32_t done_end = millis() + 2000;
+    while (millis() < done_end) { lv_task_handler(); delay(5); }
 }

@@ -6,5 +6,8 @@
 uint16_t battery_voltage_mv(void);
 
 // Returns battery state of charge as 0–100%, derived from voltage.
-// Returns 0 on read failure.
+// Returns 100 when no battery detected (USB powered).
 int battery_pct(void);
+
+// Convert a voltage (already read) to 0–100% — avoids a second I2C read.
+int battery_pct_from_mv(uint16_t mv);

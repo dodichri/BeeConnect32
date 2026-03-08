@@ -34,13 +34,15 @@ uint16_t battery_voltage_mv(void)
     return mv;
 }
 
-// Returns 0–100 when battery is connected.
-// Returns 100 when no battery detected (USB powered — power is available).
-int battery_pct(void)
+int battery_pct_from_mv(uint16_t mv)
 {
-    uint16_t mv = _read_raw_mv();
     if (mv == 0)    return 100;  // USB powered, no battery
     if (mv <= 3000) return 0;
     if (mv >= 4200) return 100;
     return (int)((mv - 3000UL) * 100UL / (4200UL - 3000UL));
+}
+
+int battery_pct(void)
+{
+    return battery_pct_from_mv(_read_raw_mv());
 }

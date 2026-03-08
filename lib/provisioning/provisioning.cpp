@@ -1,5 +1,6 @@
 #include "provisioning.h"
 #include "display.h"
+#include "logger.h"
 #include <WiFi.h>
 #include <WebServer.h>
 #include <DNSServer.h>
@@ -11,7 +12,6 @@
 #else
 #define WIFI_SSID     ""
 #define WIFI_PASSWORD ""
-#define BEEP_API_KEY  ""
 #endif
 
 #define STA_TIMEOUT_MS  15000
@@ -41,7 +41,7 @@ void provisioning_reset(void)
     _prefs.begin("wifi", false);
     _prefs.clear();
     _prefs.end();
-    Serial.println("[wifi] Credentials erased");
+    LOG_INFO("Wi-Fi credentials erased");
 }
 
 int provisioning_rssi_pct(void)
@@ -62,7 +62,7 @@ bool provisioning_connect_sta(void)
     password = _prefs.getString("password", WIFI_PASSWORD);
     _prefs.end();
 
-    Serial.printf("[wifi] Connecting to \"%s\"...\n", ssid.c_str());
+    LOG_INFO("Connecting to \"%s\"...", ssid.c_str());
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid.c_str(), password.c_str());
 
@@ -71,14 +71,14 @@ bool provisioning_connect_sta(void)
         display_tick();
         delay(100);
         if (millis() - start > STA_TIMEOUT_MS) {
-            Serial.println("[wifi] Connection timed out");
+            LOG_ERROR("Wi-Fi connection timed out");
             display_show_error("Wi-Fi connect failed.\nCheck credentials.");
             return false;
         }
     }
 
-    Serial.printf("[wifi] Connected — IP %s  RSSI %d dBm\n",
-                  WiFi.localIP().toString().c_str(), WiFi.RSSI());
+    LOG_INFO("Connected — IP %s  RSSI %d dBm",
+             WiFi.localIP().toString().c_str(), WiFi.RSSI());
     return true;
 }
 
