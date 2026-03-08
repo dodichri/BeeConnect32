@@ -36,5 +36,9 @@ void display_show_cal_weight(void (*on_confirm)(float ref_g));
 // Step 3: confirmation.
 void display_show_cal_done(float ref_g);
 
+// Update the status bar text after display_show_main() has been called.
+// success=true shows text in green, false in red.
+void display_set_status(const char *msg, bool success);
+
 // Access the underlying board object (needed by sensors / OTA for sleep, etc.).
 LilyGo_AMOLED &display_get_board(void);

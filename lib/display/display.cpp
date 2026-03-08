@@ -7,6 +7,7 @@
 // ── Board instance ────────────────────────────────────────────────────────────
 
 static LilyGo_AMOLED _board;
+static lv_obj_t      *_status_lbl = NULL;
 
 LilyGo_AMOLED &display_get_board(void) { return _board; }
 
@@ -236,13 +237,22 @@ void display_show_main(float weight_kg, float temp_c, int rssi_pct, int batt_pct
     lv_obj_set_style_pad_left(sbar, 14, 0);
     lv_obj_set_style_pad_right(sbar, 14, 0);
 
-    lv_obj_t *rssi_lbl = make_label(sbar, &lv_font_montserrat_14, CLR_GREY,
-                                    "Uploading to BEEP...");
-    lv_obj_align(rssi_lbl, LV_ALIGN_LEFT_MID, 0, 0);
+    _status_lbl = make_label(sbar, &lv_font_montserrat_14, CLR_GREY,
+                             "Uploading to BEEP...");
+    lv_obj_align(_status_lbl, LV_ALIGN_LEFT_MID, 0, 0);
 
     lv_obj_t *online = make_label(sbar, &lv_font_montserrat_14, CLR_GREEN, "ONLINE");
     lv_obj_align(online, LV_ALIGN_RIGHT_MID, 0, 0);
 
+    lv_task_handler();
+}
+
+void display_set_status(const char *msg, bool success)
+{
+    if (!_status_lbl) return;
+    lv_label_set_text(_status_lbl, msg);
+    lv_obj_set_style_text_color(_status_lbl,
+        success ? CLR_GREEN : CLR_RED, 0);
     lv_task_handler();
 }
 
