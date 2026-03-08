@@ -116,12 +116,14 @@ static const char PORTAL_HTML[] PROGMEM = R"HTML(
     <label>Wi-Fi Password</label>
     <input name="password" type="password" placeholder="••••••••">
     <hr>
-    <label>BEEP API Key</label>
-    <input name="api_key" type="text" placeholder="Paste your BEEP key here">
-    <p class="hint">Found in the BEEP app under Settings &rarr; Hardware &rarr; API key</p>
+    <label>BEEP Email</label>
+    <input name="beep_email" type="email" placeholder="you@example.com">
+    <label>BEEP Password</label>
+    <input name="beep_password" type="password" placeholder="••••••••">
+    <p class="hint">Used once to fetch your API token. Credentials are not stored.</p>
     <label>BEEP Device ID</label>
     <input name="device_id" type="text" placeholder="e.g. 12345">
-    <p class="hint">Found in the BEEP app under Settings &rarr; Hardware &rarr; Device ID</p>
+    <p class="hint">Found in the BEEP app under Settings &rarr; Hardware</p>
     <button type="submit">Save &amp; Connect</button>
   </form>
 </div>
@@ -148,10 +150,11 @@ static void _handle_root(void)
 
 static void _handle_save(void)
 {
-    String ssid      = _server.arg("ssid");
-    String pass      = _server.arg("password");
-    String api_key   = _server.arg("api_key");
-    String device_id = _server.arg("device_id");
+    String ssid          = _server.arg("ssid");
+    String pass          = _server.arg("password");
+    String beep_email    = _server.arg("beep_email");
+    String beep_password = _server.arg("beep_password");
+    String device_id     = _server.arg("device_id");
 
     if (ssid.length() == 0) {
         _server.send(400, "text/plain", "SSID is required");
@@ -163,12 +166,12 @@ static void _handle_save(void)
     _prefs.putString("password", pass);
     _prefs.end();
 
-    if (api_key.length() > 0 || device_id.length() > 0) {
-        _prefs.begin("beep", false);
-        if (api_key.length() > 0)   _prefs.putString("api_key",   api_key);
-        if (device_id.length() > 0) _prefs.putString("device_id", device_id);
-        _prefs.end();
-    }
+    // Store BEEP credentials for login after reboot; device_id saved directly
+    _prefs.begin("beep", false);
+    if (beep_email.length() > 0)    _prefs.putString("email",     beep_email);
+    if (beep_password.length() > 0) _prefs.putString("password",  beep_password);
+    if (device_id.length() > 0)     _prefs.putString("device_id", device_id);
+    _prefs.end();
 
     Serial.printf("[wifi] Credentials saved for SSID: %s\n", ssid.c_str());
     _server.send(200, "text/html", SAVED_HTML);

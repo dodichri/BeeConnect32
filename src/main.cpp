@@ -1,11 +1,13 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <Preferences.h>
 #include "version.h"
 #include "display.h"
 #include "sensors.h"
 #include "provisioning.h"
 #include "ota.h"
 #include "diagnostics.h"
+#include "beep_api.h"
 
 #define BOOT_PIN      0
 #define BOOT_HOLD_MS  3000
@@ -43,6 +45,27 @@ void setup()
         // Error shown by connect_sta(); continue to allow offline display
     }
 
+    // ── BEEP login (first boot after provisioning) ──
+    if (WiFi.status() == WL_CONNECTED) {
+        Preferences beep_prefs;
+        beep_prefs.begin("beep", true);
+        String beep_email    = beep_prefs.getString("email",    "");
+        String beep_password = beep_prefs.getString("password", "");
+        bool   has_token     = beep_prefs.isKey("api_key");
+        beep_prefs.end();
+
+        if (!has_token && beep_email.length() > 0 && beep_password.length() > 0) {
+            Serial.println("Logging in to BEEP...");
+            if (beep_login(beep_email, beep_password) == BEEP_OK) {
+                // Clear stored password now that we have the token
+                Preferences clear_prefs;
+                clear_prefs.begin("beep", false);
+                clear_prefs.remove("password");
+                clear_prefs.end();
+            }
+        }
+    }
+
     // ── OTA check ──
     if (WiFi.status() == WL_CONNECTED) {
         ota_check_and_update();  // reboots if update flashed; returns otherwise
@@ -71,6 +94,11 @@ void setup()
 
     Serial.printf("Weight: %.1f g  Temp: %.2f C  RSSI: %d%%\n",
                   weight_g, temp_c, rssi);
+
+    // ── BEEP API upload ──
+    if (WiFi.status() == WL_CONNECTED) {
+        beep_upload(temp_c, weight_g);
+    }
 }
 
 void loop()
