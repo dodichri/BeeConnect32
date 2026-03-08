@@ -8,7 +8,7 @@
 #include <math.h>
 
 // ── Pin assignments ───────────────────────────────────────────────────────────
-#define DS18B20_PIN  43
+#define DS18B20_PIN  1
 #define HX711_DOUT   44
 #define HX711_SCK    45
 

@@ -211,7 +211,8 @@ void display_show_main(float weight_kg, float temp_c, int rssi_pct, int batt_pct
     lv_obj_align(wlbl, LV_ALIGN_TOP_LEFT, 0, 0);
 
     char wval_buf[16];
-    snprintf(wval_buf, sizeof(wval_buf), "%.2f", weight_kg);
+    if (isnan(weight_kg)) snprintf(wval_buf, sizeof(wval_buf), "---");
+    else                  snprintf(wval_buf, sizeof(wval_buf), "%.2f", weight_kg);
     lv_obj_t *wval = make_label(wcard, &lv_font_montserrat_36, CLR_WHITE, wval_buf);
     lv_obj_align(wval, LV_ALIGN_LEFT_MID, 0, -6);
 
@@ -227,7 +228,8 @@ void display_show_main(float weight_kg, float temp_c, int rssi_pct, int batt_pct
     lv_obj_align(tlbl, LV_ALIGN_TOP_LEFT, 0, 0);
 
     char tval_buf[16];
-    snprintf(tval_buf, sizeof(tval_buf), "%.1f\xc2\xb0", temp_c);  // °
+    if (isnan(temp_c)) snprintf(tval_buf, sizeof(tval_buf), "---");
+    else               snprintf(tval_buf, sizeof(tval_buf), "%.1f\xc2\xb0", temp_c);  // °
     lv_obj_t *tval = make_label(tcard, &lv_font_montserrat_36, CLR_DARK, tval_buf);
     lv_obj_align(tval, LV_ALIGN_LEFT_MID, 0, -6);
 

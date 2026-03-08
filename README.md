@@ -28,7 +28,7 @@ BeeConnect32 measures hive weight and internal temperature, displays live readin
 |-----------|------|
 | Board | LilyGo T-Display S3 AMOLED Plus (ESP32-S3R8) |
 | Display | RM67162 AMOLED, 536×240 px |
-| Temperature sensor | DS18B20 (1-Wire, GPIO 43) |
+| Temperature sensor | DS18B20 (1-Wire, GPIO 1) |
 | Load cell ADC | HX711 (DOUT GPIO 44, SCK GPIO 45) |
 | PMU | AXPM65611 |
 | Charge IC | BQ25896 (USB-C input, JST-PH 1.25mm LiPo output) |

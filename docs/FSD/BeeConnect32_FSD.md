@@ -85,7 +85,7 @@ At ~15 mA average draw (short wake + long deep sleep), a 2000 mAh cell provides 
 | CST816S touch | INT | 21 |
 | CST816S touch | RST | none (not present on this board) |
 | Peripheral power enable | PMIC_EN | 38 |
-| DS18B20 temperature | 1-Wire | 43 |
+| DS18B20 temperature | 1-Wire | 1 |
 | HX711 load cell | DOUT | 44 |
 | HX711 load cell | SCK | 45 |
 | Boot button | BOOT | 0 |
@@ -266,7 +266,7 @@ Behaviour:
 - Exit by rebooting the device.
 
 ### 6.8 Sensor Readings
-- **DS18B20**: 1-Wire on GPIO 43. Single device on bus. Uses `DallasTemperature` library.
+- **DS18B20**: 1-Wire on GPIO 1. Single device on bus. Uses `DallasTemperature` library.
 - **HX711**: bit-banged on GPIOs 44 (DOUT) / 45 (SCK). Averages 5 readings per measurement. Requires calibration before weight values are valid.
 
 ### 6.9 BEEP API

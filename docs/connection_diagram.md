@@ -54,7 +54,7 @@
 
 | Signal | ESP32-S3 GPIO | Connected To |
 |--------|--------------|--------------|
-| 1-Wire Data | GPIO 43 | DS18B20 DQ |
+| 1-Wire Data | GPIO 1 | DS18B20 DQ |
 | HX711 DOUT | GPIO 44 | HX711 DOUT |
 | HX711 SCK | GPIO 45 | HX711 SCK |
 
@@ -66,7 +66,7 @@
 |-------------|-----------|-------|
 | VDD (pin 3) | 3.3V | Power |
 | GND (pin 1) | GND | Ground |
-| DQ (pin 2) | GPIO 43 | Data — **requires 4.7 kΩ pull-up to 3.3V** |
+| DQ (pin 2) | GPIO 1 | Data — **requires 4.7 kΩ pull-up to 3.3V** |
 
 > The 4.7 kΩ pull-up resistor is wired between the DQ line and 3.3V. Without it the 1-Wire bus will not function.
 

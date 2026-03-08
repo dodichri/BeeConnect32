@@ -23,10 +23,9 @@ static void run_sensor_only_mode()
     LOG_INFO("Sensor-only mode — refreshing every 15 s, reboot to exit");
 
     while (true) {
-        float temp_c   = sensors_read_temp_c();
-        float weight_g = sensors_read_weight_g();
-        float weight_kg = isnan(weight_g) ? 0.0f : weight_g / 1000.0f;
-        if (isnan(temp_c)) temp_c = 0.0f;
+        float temp_c    = sensors_read_temp_c();
+        float weight_g  = sensors_read_weight_g();
+        float weight_kg = isnan(weight_g) ? NAN : weight_g / 1000.0f;
 
         int      rssi   = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
         uint16_t bat_mv = battery_voltage_mv();
@@ -131,8 +130,7 @@ void setup()
     // ── Read sensors ──
     float temp_c   = sensors_read_temp_c();
     float weight_g = sensors_read_weight_g();
-    float weight_kg = isnan(weight_g) ? 0.0f : weight_g / 1000.0f;
-    if (isnan(temp_c)) temp_c = 0.0f;
+    float weight_kg = isnan(weight_g) ? NAN : weight_g / 1000.0f;
 
     // ── Update display ──
     int      rssi   = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
