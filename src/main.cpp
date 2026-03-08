@@ -8,6 +8,7 @@
 #include "ota.h"
 #include "diagnostics.h"
 #include "beep_api.h"
+#include "battery.h"
 #include "logger.h"
 
 #define BOOT_PIN          0
@@ -28,7 +29,7 @@ static void run_sensor_only_mode()
         if (isnan(temp_c)) temp_c = 0.0f;
 
         int rssi = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
-        display_show_main(weight_kg, temp_c, rssi, 100);
+        display_show_main(weight_kg, temp_c, rssi, battery_pct());
         display_set_status("Sensor mode - reboot to exit", true);
 
         LOG_INFO("Sensor-only: %.1f g  %.2f C", weight_g, temp_c);
@@ -132,14 +133,15 @@ void setup()
     if (isnan(temp_c)) temp_c = 0.0f;
 
     // ── Update display ──
-    int rssi = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
-    display_show_main(weight_kg, temp_c, rssi, 100);
+    int rssi    = (WiFi.status() == WL_CONNECTED) ? provisioning_rssi_pct() : 0;
+    uint16_t bat_mv = battery_voltage_mv();
+    display_show_main(weight_kg, temp_c, rssi, battery_pct());
 
     LOG_INFO("Weight: %.1f g  Temp: %.2f C  RSSI: %d%%", weight_g, temp_c, rssi);
 
     // ── BEEP API upload ──
     if (WiFi.status() == WL_CONNECTED) {
-        beep_update_device();
+        beep_update_device(bat_mv);
         BeepResult r = beep_upload(temp_c, weight_g);
         if (r == BEEP_OK) {
             display_set_status("Uploaded to BEEP", true);

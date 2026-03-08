@@ -11,8 +11,9 @@ enum BeepResult {
 // On success, stores the returned token in NVS (beep/api_key) and returns BEEP_OK.
 BeepResult beep_login(const String &email, const String &password);
 
-// PUT /api/devices/{key} — update firmware_version for the device.
-BeepResult beep_update_device(void);
+// POST /api/devices/multiple — update firmware_version, boot_count, and battery voltage.
+// bat_mv: battery voltage in millivolts (0 = unknown / not connected).
+BeepResult beep_update_device(uint16_t bat_mv);
 
 // Upload temperature and weight to the BEEP API.
 // API key is read from NVS, falling back to compile-time BEEP_API_KEY.

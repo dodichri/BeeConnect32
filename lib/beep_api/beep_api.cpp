@@ -62,7 +62,7 @@ BeepResult beep_login(const String &email, const String &password)
 }
 
 
-BeepResult beep_update_device(void)
+BeepResult beep_update_device(uint16_t bat_mv)
 {
     Preferences prefs;
     prefs.begin("beep", true);
@@ -91,6 +91,7 @@ BeepResult beep_update_device(void)
     dev["measurement_interval_min"] = 15;
     dev["type"]                     = "Other";
     dev["delete"]                   = false;
+    if (bat_mv > 0) dev["battery_voltage"] = bat_mv / 1000.0f;
     String payload;
     serializeJson(doc, payload);
 
