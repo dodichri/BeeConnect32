@@ -5,6 +5,7 @@
 #include "sensors.h"
 #include "provisioning.h"
 #include "ota.h"
+#include "diagnostics.h"
 
 #define BOOT_PIN      0
 #define BOOT_HOLD_MS  3000
@@ -13,6 +14,7 @@ void setup()
 {
     Serial.begin(115200);
     Serial.printf("BeeConnect32 v%s booting...\n", FIRMWARE_VERSION);
+    diagnostics_increment_boot_count();
 
     // ── Display init + splash ──
     display_init();
@@ -74,5 +76,6 @@ void setup()
 void loop()
 {
     display_tick();
+    diagnostics_poll();
     delay(5);
 }
