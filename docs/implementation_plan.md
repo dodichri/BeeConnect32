@@ -221,7 +221,28 @@ pio run --target upload && pio device monitor
 
 ---
 
-## Phase 10: Field Testing
+## Phase 10: Battery Monitoring ✅
+
+**Goal**: Read real battery voltage and state of charge from the onboard BQ25896 charge IC; include voltage in BEEP device update.
+
+### Completed
+- `lib/battery/battery.h / battery.cpp`
+- `battery_voltage_mv()` — reads BQ25896 register 0x0E via I2C (address 0x6B)
+  - Register formula: `bits[6:0] × 20 mV + 2304 mV`
+  - Returns 0 when no battery connected (register reads `0x00` / 2304 mV base offset)
+- `battery_pct()` — linear interpolation 3000–4200 mV → 0–100%
+  - Returns 100% when no battery detected (USB powered)
+- `display_show_main()` now receives real battery percentage instead of placeholder 100
+- `beep_update_device(bat_mv)` — `battery_voltage` field (volts) added to device update payload; omitted when no battery connected
+
+### Notes
+- BQ25896 is the "unknown device at 0x6B" previously noted on the I2C bus
+- `Arduino.h` must be included in `battery.cpp` before `logger.h` for `Serial` to be in scope
+- No battery connected (USB-C only): register returns `0x00` → display shows 100%, `battery_voltage` omitted from BEEP payload
+
+---
+
+## Phase 11: Field Testing
 
 ### Checklist
 
@@ -235,7 +256,9 @@ pio run --target upload && pio device monitor
 - [ ] `wifi_reset` erases credentials and re-enters captive portal
 - [ ] Captive portal logo displays correctly
 - [ ] BEEP.nl dashboard shows sensor measurements at correct timestamps
-- [ ] BEEP.nl device list shows correct firmware version and boot count
+- [ ] BEEP.nl device list shows correct firmware version, boot count, and battery voltage
+- [ ] Battery percentage on screen matches expected state of charge when on battery
+- [ ] Battery percentage shows 100% when on USB only
 - [ ] OTA: tag a new release on GitHub; verify device picks it up on next wake
 - [ ] `debug_metrics` output is correct
 - [ ] Deep sleep current draw is within expected range for battery life estimates
@@ -256,5 +279,6 @@ Phase 0 (Dev env) ✅
        ├─ Phase 7 (Diagnostics + logging) ✅
        ├─ Phase 8 (Integration + deep sleep) ✅
        ├─ Phase 9 (BEEP device update) ✅
-       └─ Phase 10 (Field testing)
+       ├─ Phase 10 (Battery monitoring) ✅
+       └─ Phase 11 (Field testing)
 ```
