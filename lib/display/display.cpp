@@ -131,7 +131,7 @@ void display_show_splash(const char *version)
     lv_obj_align(ver, LV_ALIGN_CENTER, 0, 44);
 
     lv_obj_t *tag = make_label(scr, &lv_font_montserrat_14, CLR_DARK,
-                                "Beehive Monitor  \xc2\xb7  ESP32-S3");
+                                "Beehive Monitor - ESP32-S3");
     lv_obj_set_style_text_opa(tag, LV_OPA_70, 0);
     lv_obj_align(tag, LV_ALIGN_CENTER, 0, 66);
 
@@ -261,8 +261,8 @@ void display_show_ota_progress(int percent)
         lv_obj_align(title, LV_ALIGN_CENTER, 0, -50);
 
         lv_obj_t *sub = make_label(scr, &lv_font_montserrat_14, CLR_WHITE,
-                                   "Flashing firmware  —  do not power off");
-        lv_obj_set_style_text_opa(sub, LV_OPA_45, 0);
+                                   "Flashing firmware - do not power off");
+        lv_obj_set_style_text_opa(sub, LV_OPA_COVER, 0);
         lv_obj_align(sub, LV_ALIGN_CENTER, 0, -24);
 
         // Slim track (10px height)
