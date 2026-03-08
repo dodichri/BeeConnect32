@@ -48,7 +48,28 @@ LilyGo T-Display S3 AMOLED Plus — ESP32-S3R8 (8 MB PSRAM, 16 MB Flash)
 
 Reference: https://wiki.lilygo.cc/get_started/en/Display/T-Display-S3-AMOLED-Plus/T-Display-S3-AMOLED-Plus.html
 
-### 3.2 Pin Assignments
+### 3.2 Power Management
+
+| Component | Part | Notes |
+|-----------|------|-------|
+| PMU | AXPM65611 | System power management |
+| Charge IC | BQ25896 | Li-Ion/LiPo charge management |
+| Battery connector | JST-PH 1.25mm 2-pin | 3.7V LiPo |
+| Charging input | USB-C | 5V regulated input from solar panel or USB |
+
+#### Solar Charging
+The BQ25896 supports direct solar panel charging via USB-C with no additional hardware:
+- **Input voltage range**: 3.9V–14V — tolerates variable solar panel output
+- **Input Current Optimizer (ICO)**: maximises power drawn from the source (basic MPPT behaviour)
+- **Power path management**: powers the board from the panel while simultaneously charging the battery; switches seamlessly to battery when the panel drops out
+- **Max charge current**: 3A — a 6W panel at 5V delivers ~1.2A, well within range
+
+**Recommended battery**: 3.7V LiPo, 2000–4000 mAh, JST-PH 1.25mm 2-pin connector.
+At ~15 mA average draw (short wake + long deep sleep), a 2000 mAh cell provides weeks of autonomy; a 6W panel maintains charge in normal daylight.
+
+**Solar panel requirement**: USB-C output must be regulated to 5V. Panels marketed for phone/device charging are typically regulated. The BQ25896's 14V maximum input provides headroom if the panel voltage is slightly higher.
+
+### 3.3 Pin Assignments
 
 | Peripheral | Signal | GPIO |
 |------------|--------|------|
@@ -69,7 +90,7 @@ Reference: https://wiki.lilygo.cc/get_started/en/Display/T-Display-S3-AMOLED-Plu
 | HX711 load cell | SCK | 45 |
 | Boot button | BOOT | 0 |
 
-### 3.3 I2C Bus (SDA=3, SCL=2)
+### 3.4 I2C Bus (SDA=3, SCL=2)
 
 The touch/peripheral I2C bus is shared with other on-board devices:
 
@@ -81,7 +102,7 @@ The touch/peripheral I2C bus is shared with other on-board devices:
 
 GPIO38 must be driven HIGH before accessing any I2C device on this bus. The CST816S requires approximately 1000 ms after power-on before it responds on I2C.
 
-### 3.4 Display
+### 3.5 Display
 - Controller: RM67162, SPI interface (initialised with `beginAMOLED_191_SPI()`)
 - Resolution: 536 × 240 px
 - LVGL 8.x used for all UI rendering via the LilyGo AMOLED library.
