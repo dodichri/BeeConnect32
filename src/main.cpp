@@ -88,23 +88,17 @@ void setup()
             // Error shown by connect_sta(); continue to allow offline display
         }
 
-        // ── BEEP login (first boot after provisioning) ──
+        // ── BEEP login — refresh token on every boot ──
         if (WiFi.status() == WL_CONNECTED) {
             Preferences beep_prefs;
             beep_prefs.begin("beep", true);
             String beep_email    = beep_prefs.getString("email",    "");
             String beep_password = beep_prefs.getString("password", "");
-            bool   has_token     = beep_prefs.isKey("api_key");
             beep_prefs.end();
 
-            if (!has_token && beep_email.length() > 0 && beep_password.length() > 0) {
-                Serial.println("Logging in to BEEP...");
-                if (beep_login(beep_email, beep_password) == BEEP_OK) {
-                    Preferences clear_prefs;
-                    clear_prefs.begin("beep", false);
-                    clear_prefs.remove("password");
-                    clear_prefs.end();
-                }
+            if (beep_email.length() > 0 && beep_password.length() > 0) {
+                LOG_INFO("Logging in to BEEP...");
+                beep_login(beep_email, beep_password);
             }
         }
 
@@ -145,6 +139,7 @@ void setup()
 
     // ── BEEP API upload ──
     if (WiFi.status() == WL_CONNECTED) {
+        beep_update_device();
         BeepResult r = beep_upload(temp_c, weight_g);
         if (r == BEEP_OK) {
             display_set_status("Uploaded to BEEP", true);

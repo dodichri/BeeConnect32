@@ -75,13 +75,26 @@ BeepResult beep_update_device(void)
         return BEEP_NO_KEY;
     }
 
+    // /api/devices/multiple expects an array of device objects
     JsonDocument doc;
-    doc["firmware_version"] = FIRMWARE_VERSION;
+    JsonArray arr = doc.to<JsonArray>();
+    JsonObject dev = arr.add<JsonObject>();
+    Preferences diag_prefs;
+    diag_prefs.begin("diag", true);
+    uint32_t boot_count = diag_prefs.getUInt("crash_cnt", 0);
+    diag_prefs.end();
+
+    dev["key"]                      = device_id;
+    dev["hardware_id"]              = device_id;
+    dev["firmware_version"]         = FIRMWARE_VERSION;
+    dev["boot_count"]               = boot_count;
+    dev["measurement_interval_min"] = 15;
+    dev["type"]                     = "Other";
+    dev["delete"]                   = false;
     String payload;
     serializeJson(doc, payload);
 
-    String url = String("https://api.beep.nl/api/device/") + device_id;
-    LOG_INFO("BEEP device update: PUT %s %s", url.c_str(), payload.c_str());
+    LOG_INFO("BEEP device update: POST /api/devices/multiple %s", payload.c_str());
 
     WiFiClientSecure client;
     client.setInsecure();
@@ -89,14 +102,18 @@ BeepResult beep_update_device(void)
     HTTPClient https;
     https.setTimeout(10000);
     https.addHeader("Content-Type",  "application/json");
+    https.addHeader("Accept",        "application/json, text/plain, */*");
+    https.addHeader("Origin",        "https://app.beep.nl");
+    https.addHeader("Referer",       "https://app.beep.nl/");
+    https.addHeader("User-Agent",    "Mozilla/5.0 (compatible; BeeConnect32)");
     https.addHeader("Authorization", "Bearer " + api_key);
 
-    if (!https.begin(client, url)) {
+    if (!https.begin(client, "https://api.beep.nl/api/devices/multiple")) {
         LOG_ERROR("BEEP device update begin() failed");
         return BEEP_FAILED;
     }
 
-    int code = https.PUT(payload);
+    int code = https.POST(payload);
     String body = https.getString();
     https.end();
 
