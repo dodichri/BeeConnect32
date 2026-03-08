@@ -3,13 +3,13 @@ GitHub remote: https://github.com/dodichri/BeeConnect32.git
 
 ## 1. Purpose
 
-BeeConnect32 is an embedded beehive monitoring device built on the LilyGo T-Display S3 AMOLED Plus (ESP32-S3). It continuously measures hive weight and internal temperature, displays live readings on a colour AMOLED screen, and periodically uploads sensor data to the BEEP.nl beekeeping platform via its REST API. Between measurement cycles the device enters deep sleep to conserve battery.
+BeeConnect32 is an embedded beehive monitoring device built on the LilyGo T-Display S3 AMOLED Plus (ESP32-S3). It continuously measures hive weight and internal temperature, displays live readings on a colour AMOLED screen, uploads sensor data to the BEEP.nl beekeeping platform via its REST API, and registers device metadata with the BEEP platform. Between measurement cycles the device enters deep sleep to conserve battery.
 
 ## 2. Branding Guide
 
 ### 2.1 Logos
 - Main Logo: docs/images/BeeConnect32_logo.png
-- Use Main Logo in UI
+- Use Main Logo in UI and captive portal
 
 ### 2.2 Colors
 - Background: #F8F9FA
@@ -82,7 +82,7 @@ The touch/peripheral I2C bus is shared with other on-board devices:
 GPIO38 must be driven HIGH before accessing any I2C device on this bus. The CST816S requires approximately 1000 ms after power-on before it responds on I2C.
 
 ### 3.4 Display
-- Controller: RM67162, QSPI interface
+- Controller: RM67162, SPI interface (initialised with `beginAMOLED_191_SPI()`)
 - Resolution: 536 × 240 px
 - LVGL 8.x used for all UI rendering via the LilyGo AMOLED library.
 
@@ -97,20 +97,21 @@ BeeConnect32/
   platformio.ini          # board, framework, library dependencies
   include/
     version.h             # FIRMWARE_VERSION string + MAJOR/MINOR/PATCH defines
+    logger.h              # LOG_INFO / LOG_WARN / LOG_ERROR macros (debug-only)
     secrets_template.h    # copy to secrets.h and fill in credentials
-    secrets.h             # git-ignored; holds WIFI_SSID, WIFI_PASSWORD,
-                          #   BEEP_API_KEY, OTA_AUTH_TOKEN
+    secrets.h             # git-ignored; holds BEEP_API_KEY, OTA_AUTH_TOKEN
   src/
     main.cpp              # setup() + loop() / boot sequence
   lib/
     sensors/              # DS18B20 + HX711 drivers
     display/              # LVGL-based UI wrapping LilyGo AMOLED library
     provisioning/         # SoftAP captive portal + STA connect
-    beep_api/             # HTTPS POST to api.beep.nl/api/sensors
-    ota/                  # Authenticated OTA with SHA256 + downgrade guard
+    beep_api/             # HTTPS login, sensor upload, device update
+    ota/                  # Pull-based OTA from GitHub releases
     diagnostics/          # Console commands: wifi_reset, debug_metrics
   docs/
     FSD/BeeConnect32_FSD.md
+    implementation_plan.md
 ```
 
 ### 4.2 Key Dependencies (`platformio.ini`)
@@ -121,9 +122,9 @@ BeeConnect32/
 | LVGL 8.x | UI rendering |
 | OneWire + DallasTemperature | DS18B20 1-Wire temperature sensor |
 | ArduinoJson | JSON payload construction for BEEP API |
-| Preferences | NVS-backed key/value storage (replaces NVS namespace API) |
-| HTTPClient | HTTPS requests to BEEP API |
-| WebServer | Captive portal HTTP server |
+| Preferences | NVS-backed key/value storage |
+| HTTPClient + WiFiClientSecure | HTTPS requests to BEEP API and GitHub |
+| WebServer + DNSServer | Captive portal HTTP server |
 | Update | OTA firmware flashing |
 
 ### 4.3 Common Commands
@@ -137,46 +138,66 @@ pio run --target upload && pio device monitor   # flash and monitor
 
 ### 4.4 Versioning
 - Bump `include/version.h` for every release.
-- OTA enforces semver ordering; downgrades rejected unless `?force=true`.
+- OTA: tag commit as `vMAJOR.MINOR.PATCH`, attach `firmware.bin` as a GitHub release asset.
+- Device skips OTA if running version matches latest release tag.
+
+### 4.5 Logging
+- `include/logger.h` defines `LOG_INFO`, `LOG_WARN`, `LOG_ERROR` macros.
+- All log output is active in debug builds (`build_type = debug` in `platformio.ini`).
+- Log output is compiled out in release builds (`NDEBUG` defined).
 
 ## 5. Boot Flow
 
 `setup()` runs once on power-on or wake from deep sleep:
 
-1. Serial init + crash counter increment
-2. GPIO38 HIGH — enables peripheral power rail (touch, RTC, IMU)
-3. LilyGo AMOLED library init (display + touch)
-4. Splash screen (2 s)
-5. Boot button check (hold GPIO0 for 3 s during splash → force recalibration)
-6. Wi-Fi provisioning (SoftAP captive portal on first boot; STA connect if credentials exist)
-7. OTA server start (HTTP POST `/ota` on port 3232)
-8. HX711 init + calibration check (launch wizard if uncalibrated or recal triggered)
-9. Sensor readings (DS18B20 temperature + HX711 weight)
-10. Display update with live sensor data, RSSI, battery
-11. BEEP API upload (HTTPS POST to `api.beep.nl/api/sensors`)
-12. Deep sleep for 15 minutes
+1. Serial init (115200 baud)
+2. Boot counter increment (`diag/crash_cnt`)
+3. Detect wakeup cause: `ESP_SLEEP_WAKEUP_EXT0` (BOOT button) → sensor-only mode
+4. Display init + splash screen (2 s)
+5. BOOT button check during splash:
+   - Short press (< 3 s) → sensor-only mode
+   - Hold ≥ 3 s → force scale recalibration
+6. If not sensor-only:
+   a. Wi-Fi provisioning (SoftAP captive portal on first boot; STA connect if credentials exist)
+   b. BEEP login — `POST /api/login` with stored email+password → refresh Bearer token
+   c. OTA check — query GitHub releases API; download and flash if newer version available
+7. Sensor init (HX711 + DS18B20)
+8. Calibration check → wizard if uncalibrated or forced
+9. If sensor-only: enter continuous sensor display loop (no upload, no sleep) — never returns
+10. Read sensors (DS18B20 temperature + HX711 weight)
+11. Display update with live sensor data and RSSI
+12. BEEP device update — `POST /api/devices/multiple` with firmware version and boot count
+13. BEEP sensor upload — `POST /api/sensors` with temperature, weight, RSSI
+14. Hold display for 5 s
+15. Deep sleep for 15 minutes (EXT0 wakeup enabled on GPIO0 for sensor-only mode)
 
 ## 6. Functional Requirements
 
 ### 6.1 Startup & Provisioning
 - On first boot, enter SoftAP mode (`BeeConnect32-XXXX` where XXXX = last 4 hex digits of MAC) and serve a captive portal at `http://192.168.4.1/`.
-- Portal collects: Wi-Fi SSID, Wi-Fi password, BEEP API key.
-- Credentials persisted via `Preferences` library and device reboots automatically.
+- Portal collects: Wi-Fi SSID, Wi-Fi password, BEEP email, BEEP password, BEEP device key.
+- Logo served as a separate `/logo.png` endpoint (PROGMEM, 80×68 px PNG).
+- Credentials persisted via `Preferences` library; device reboots automatically after submit.
 - On subsequent boots, connect in STA mode using saved credentials.
 
 ### 6.2 OTA Updates
-- HTTP server on port 3232 listens for `POST /ota` while the device is awake.
-- Authenticated via `Authorization: Bearer <token>` header (`OTA_AUTH_TOKEN` in `secrets.h`).
-- Optional `X-Firmware-Version` header: OTA rejects downgrades unless `?force=true`.
-- Optional `X-Firmware-SHA256` header: firmware SHA256 verified before flashing.
-- Uses Arduino `Update` library; last-known-good slot tracked in `Preferences`.
-- Rolls back automatically on failed boot.
+- Pull-based: device queries `https://api.github.com/repos/dodichri/BeeConnect32/releases/latest` on each wake.
+- Compares `tag_name` (e.g. `v1.2.0`) against `FIRMWARE_VERSION` using semver; skips if up to date.
+- HTTP 404 from GitHub API treated as no release available (not an error).
+- Downloads `firmware.bin` release asset via HTTPS (follows GitHub → S3 redirect).
+- Streams firmware to `Update` library; shows OTA progress screen during download.
+- Reboots on success; no downgrade — version check rejects older tags.
 
 ### 6.3 Diagnostics
-- Serial console commands: `wifi_reset` (erases saved credentials), `debug_metrics` (heap, uptime, crash count).
-- Persistent boot/crash counter in `Preferences`.
+- Serial console commands: `wifi_reset` (erases saved credentials and reboots), `debug_metrics` (heap, uptime, crash count).
+- Persistent boot counter in `Preferences` namespace `diag`, key `crash_cnt`. Incremented at the top of `setup()` on every boot/wake.
 
-### 6.4 Display UI
+### 6.4 Logging
+- Three log levels: `LOG_INFO`, `LOG_WARN`, `LOG_ERROR`.
+- Active only in debug builds; compiled out in release builds.
+- Output format: `[INFO]  message`, `[WARN]  message`, `[ERROR] message`.
+
+### 6.5 Display UI
 
 #### Splash Screen
 - Honey Yellow background.
@@ -189,6 +210,7 @@ pio run --target upload && pio device monitor   # flash and monitor
 - Left card (Teal): weight in kg (Montserrat 28 pt).
 - Right card (Honey Yellow): temperature in °C (Montserrat 28 pt).
 - Bottom status bar: Wi-Fi signal quality + battery percentage.
+- Status bar text updated after upload via `display_set_status(msg, success)` — green on success, red on failure.
 
 #### OTA Progress Screen
 - Dark Gray background with progress bar (Teal fill) and percentage label.
@@ -199,7 +221,7 @@ pio run --target upload && pio device monitor   # flash and monitor
 #### Calibration Prompt
 - Shown when BOOT button held during splash; prompts user to keep holding for 3 s.
 
-### 6.5 HX711 Scale Calibration Wizard
+### 6.6 HX711 Scale Calibration Wizard
 
 Triggered on first boot (no saved calibration) or by holding BOOT button for 3 s during splash.
 
@@ -209,39 +231,75 @@ Triggered on first boot (no saved calibration) or by holding BOOT button for 3 s
 
 **Step 3 — Done:** Calibration factor computed and saved to `Preferences`. Confirmation screen shows reference weight used.
 
-### 6.6 Sensor Readings
+### 6.7 Sensor-Only Mode
+
+Activated by:
+- Pressing BOOT button briefly (< 3 s) during the splash screen, or
+- Pressing BOOT button while the device is in deep sleep (EXT0 wakeup on GPIO0)
+
+Behaviour:
+- Reads sensors and updates display every 15 seconds.
+- Status bar shows "Sensor mode - reboot to exit".
+- No BEEP upload, no deep sleep.
+- Wi-Fi is not connected in sensor-only mode.
+- Exit by rebooting the device.
+
+### 6.8 Sensor Readings
 - **DS18B20**: 1-Wire on GPIO 43. Single device on bus. Uses `DallasTemperature` library.
 - **HX711**: bit-banged on GPIOs 44 (DOUT) / 45 (SCK). Averages 5 readings per measurement. Requires calibration before weight values are valid.
 
-### 6.7 BEEP API Upload
-- HTTPS POST to `https://api.beep.nl/api/sensors`.
-- Payload: `{"t": <temp_c>, "weight": <weight_g>}`.
-- `Authorization: Bearer <api_key>` header.
-- API key read from `Preferences` first; falls back to `BEEP_API_KEY` in `secrets.h`.
+### 6.9 BEEP API
 
-### 6.8 Deep Sleep
+#### Authentication
+- `POST https://api.beep.nl/api/login` with `{"email": ..., "password": ...}`
+- Returns `api_token`; stored in NVS `beep/api_key`.
+- Login performed on every boot (if email+password are stored) to keep token fresh.
+- Email and password retained in NVS to allow re-login on each wake cycle.
+
+#### Sensor Upload
+- `POST https://api.beep.nl/api/sensors`
+- Payload: `{"t": <temp_c>, "weight_kg": <weight_kg>, "rssi": <rssi_dbm>, "key": <device_key>}`
+- `weight_kg` omitted if sensor read returns NaN.
+- Header: `Authorization: Bearer <api_key>`
+
+#### Device Update
+- `POST https://api.beep.nl/api/devices/multiple`
+- Payload: array of one device object:
+  ```json
+  [{"key": "...", "hardware_id": "...", "firmware_version": "...",
+    "boot_count": N, "measurement_interval_min": 15, "type": "Other", "delete": false}]
+  ```
+- Headers: `Content-Type`, `Accept`, `Origin: https://app.beep.nl`, `Referer: https://app.beep.nl/`, `User-Agent`, `Authorization: Bearer <api_key>`
+- Called on every wake cycle before sensor upload.
+
+### 6.10 Deep Sleep
 - Deep sleep for 15 minutes after each measurement and upload cycle.
-- `esp_deep_sleep(15ULL * 60ULL * 1000000ULL)` — timer-only wakeup.
+- `esp_deep_sleep(15ULL * 60ULL * 1000000ULL)`
+- EXT0 wakeup enabled on GPIO0 (BOOT button) to allow entry into sensor-only mode without a full power cycle.
 
 ## 7. Storage Map (`Preferences` namespaces)
 
 | Namespace | Keys | Contents |
 |-----------|------|----------|
 | `wifi` | `ssid`, `password` | Wi-Fi station credentials |
-| `beep` | `api_key` | BEEP platform API key |
+| `beep` | `api_key` | BEEP Bearer token (refreshed on every boot) |
+| `beep` | `email`, `password` | BEEP login credentials (retained for re-login) |
+| `beep` | `device_id` | BEEP device key |
 | `hx711` | `cal_factor`, `tare` | Scale calibration |
 | `ota` | `lkg_part` | Last-known-good OTA partition label |
-| `diag` | `crash_cnt` | Boot/crash counter |
+| `diag` | `crash_cnt` | Boot counter (incremented every wake) |
 
 ## 8. Configuration & Security
 
 - Secrets stored in `include/secrets.h` (git-ignored); template in `include/secrets_template.h`.
-- Required secrets: `WIFI_SSID`, `WIFI_PASSWORD`, `BEEP_API_KEY`, `OTA_AUTH_TOKEN`.
-- Wi-Fi credentials entered at runtime via captive portal take precedence over compile-time values.
+- Optional compile-time fallback: `BEEP_API_KEY` (overridden by NVS token after login).
+- BEEP credentials (email, password, device key) entered at runtime via captive portal.
+- Wi-Fi credentials entered at runtime via captive portal.
 
 ## 9. Known Limitations
 
 - No fuel gauge; battery percentage is a placeholder (always 100%).
-- OTA server is only active while the device is awake (~10–30 s per wake cycle); OTA must be initiated immediately after device comes online.
+- OTA window is narrow; device is only awake for ~10–30 s per wake cycle. OTA happens automatically at boot if a new release is available on GitHub.
 - DS18B20 assumes a single device on the 1-Wire bus; multi-drop not implemented.
 - Touch calibration wizard cannot be operated without a working touch screen.
+- BEEP Bearer token from `/api/login` may expire between wake cycles; re-login on each boot mitigates this.
