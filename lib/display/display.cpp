@@ -185,12 +185,12 @@ void display_show_main(float weight_kg, float temp_c, int rssi_pct, int batt_pct
     lv_obj_set_pos(tb_logo, 8, (TB_H - 24) / 2);
 
     // Title: starts 42 px from left (logo is visually ~26 px + 8 px margin)
-    lv_obj_t *tb_title = make_label(topbar, &lv_font_montserrat_16, CLR_YELLOW, "BeeConnect32");
-    lv_obj_set_pos(tb_title, 42, (TB_H - 16) / 2);
+    lv_obj_t *tb_title = make_label(topbar, &lv_font_montserrat_20, CLR_YELLOW, "BeeConnect32");
+    lv_obj_set_pos(tb_title, 42, (TB_H - 20) / 2);
 
     char tb_right[32];
     snprintf(tb_right, sizeof(tb_right), "WiFi %d%%   Batt %d%%", rssi_pct, batt_pct);
-    lv_obj_t *tb_info = make_label(topbar, &lv_font_montserrat_14, CLR_GREY, tb_right);
+    lv_obj_t *tb_info = make_label(topbar, &lv_font_montserrat_16, CLR_GREY, tb_right);
     lv_obj_align(tb_info, LV_ALIGN_RIGHT_MID, -14, 0);
 
     // ── Cards area ──
@@ -207,15 +207,15 @@ void display_show_main(float weight_kg, float temp_c, int rssi_pct, int batt_pct
                                  PAD, CARDS_Y + PAD, CARD_W, CARD_H, 12);
     lv_obj_set_style_pad_all(wcard, 14, 0);
 
-    lv_obj_t *wlbl = make_label(wcard, &lv_font_montserrat_14, CLR_WHITE, "WEIGHT");
+    lv_obj_t *wlbl = make_label(wcard, &lv_font_montserrat_16, CLR_WHITE, "WEIGHT");
     lv_obj_align(wlbl, LV_ALIGN_TOP_LEFT, 0, 0);
 
     char wval_buf[16];
     snprintf(wval_buf, sizeof(wval_buf), "%.2f", weight_kg);
-    lv_obj_t *wval = make_label(wcard, &lv_font_montserrat_32, CLR_WHITE, wval_buf);
+    lv_obj_t *wval = make_label(wcard, &lv_font_montserrat_36, CLR_WHITE, wval_buf);
     lv_obj_align(wval, LV_ALIGN_LEFT_MID, 0, -6);
 
-    lv_obj_t *wunit = make_label(wcard, &lv_font_montserrat_14, CLR_WHITE, "kilograms");
+    lv_obj_t *wunit = make_label(wcard, &lv_font_montserrat_16, CLR_WHITE, "kilograms");
     lv_obj_align(wunit, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 
     // Temperature card — Honey Yellow
@@ -223,15 +223,15 @@ void display_show_main(float weight_kg, float temp_c, int rssi_pct, int batt_pct
                                  PAD + CARD_W + GAP, CARDS_Y + PAD, CARD_W, CARD_H, 12);
     lv_obj_set_style_pad_all(tcard, 14, 0);
 
-    lv_obj_t *tlbl = make_label(tcard, &lv_font_montserrat_14, CLR_DARK, "TEMPERATURE");
+    lv_obj_t *tlbl = make_label(tcard, &lv_font_montserrat_16, CLR_DARK, "TEMPERATURE");
     lv_obj_align(tlbl, LV_ALIGN_TOP_LEFT, 0, 0);
 
     char tval_buf[16];
     snprintf(tval_buf, sizeof(tval_buf), "%.1f\xc2\xb0", temp_c);  // °
-    lv_obj_t *tval = make_label(tcard, &lv_font_montserrat_32, CLR_DARK, tval_buf);
+    lv_obj_t *tval = make_label(tcard, &lv_font_montserrat_36, CLR_DARK, tval_buf);
     lv_obj_align(tval, LV_ALIGN_LEFT_MID, 0, -6);
 
-    lv_obj_t *tunit = make_label(tcard, &lv_font_montserrat_14, CLR_DARK, "Celsius");
+    lv_obj_t *tunit = make_label(tcard, &lv_font_montserrat_16, CLR_DARK, "Celsius");
     lv_obj_align(tunit, LV_ALIGN_BOTTOM_LEFT, 0, 0);
 
     // ── Status bar ──
@@ -239,11 +239,11 @@ void display_show_main(float weight_kg, float temp_c, int rssi_pct, int batt_pct
     lv_obj_set_style_pad_left(sbar, 14, 0);
     lv_obj_set_style_pad_right(sbar, 14, 0);
 
-    _status_lbl = make_label(sbar, &lv_font_montserrat_14, CLR_GREY,
+    _status_lbl = make_label(sbar, &lv_font_montserrat_16, CLR_GREY,
                              "Uploading to BEEP...");
     lv_obj_align(_status_lbl, LV_ALIGN_LEFT_MID, 0, 0);
 
-    lv_obj_t *online = make_label(sbar, &lv_font_montserrat_14, CLR_GREEN, "ONLINE");
+    lv_obj_t *online = make_label(sbar, &lv_font_montserrat_16, CLR_GREEN, "ONLINE");
     lv_obj_align(online, LV_ALIGN_RIGHT_MID, 0, 0);
 
     lv_task_handler();
@@ -359,9 +359,9 @@ static void wiz_base(lv_obj_t **scr_out, const char *step_str)
     *scr_out = scr;
 
     // Step label — top right
-    lv_obj_t *step = make_label(scr, &lv_font_montserrat_14, CLR_WHITE, step_str);
+    lv_obj_t *step = make_label(scr, &lv_font_montserrat_16, CLR_WHITE, step_str);
     lv_obj_set_style_text_opa(step, LV_OPA_28, 0);
-    lv_obj_align(step, LV_ALIGN_TOP_RIGHT, -16, 12);
+    lv_obj_align(step, LV_ALIGN_TOP_RIGHT, -16, 10);
 }
 
 static lv_obj_t *wiz_icon_circle(lv_obj_t *scr, const char *symbol, int cy_offset)
@@ -384,17 +384,17 @@ static lv_obj_t *wiz_icon_circle(lv_obj_t *scr, const char *symbol, int cy_offse
 
 static lv_obj_t *wiz_pill_btn(lv_obj_t *scr, const char *text, lv_color_t bg, lv_color_t fg)
 {
-    const int BW = 160, BH = 40;
+    const int BW = 180, BH = 48;
     lv_obj_t *btn = lv_btn_create(scr);
     lv_obj_set_size(btn, BW, BH);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -20);
+    lv_obj_align(btn, LV_ALIGN_BOTTOM_MID, 0, -16);
     lv_obj_set_style_bg_color(btn, bg, 0);
     lv_obj_set_style_bg_opa(btn, LV_OPA_COVER, 0);
     lv_obj_set_style_border_width(btn, 0, 0);
     lv_obj_set_style_radius(btn, BH / 2, 0);
     lv_obj_set_style_shadow_width(btn, 0, 0);
 
-    lv_obj_t *lbl = make_label(btn, &lv_font_montserrat_16, fg, text);
+    lv_obj_t *lbl = make_label(btn, &lv_font_montserrat_20, fg, text);
     lv_obj_center(lbl);
     return btn;
 }
@@ -406,7 +406,7 @@ void display_show_cal_prompt(void)
     lv_obj_t *scr;
     wiz_base(&scr, "");
 
-    lv_obj_t *lbl = make_label(scr, &lv_font_montserrat_20, CLR_YELLOW,
+    lv_obj_t *lbl = make_label(scr, &lv_font_montserrat_28, CLR_YELLOW,
                                 "Hold BOOT 3 s\nto recalibrate");
     lv_obj_set_style_text_align(lbl, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(lbl, LV_ALIGN_CENTER, 0, 0);
@@ -428,12 +428,12 @@ void display_show_cal_tare(void (*on_continue)(void))
 
     wiz_icon_circle(scr, "O", -60);
 
-    lv_obj_t *title = make_label(scr, &lv_font_montserrat_20, CLR_WHITE, "Tare Scale");
+    lv_obj_t *title = make_label(scr, &lv_font_montserrat_28, CLR_WHITE, "Tare Scale");
     lv_obj_align(title, LV_ALIGN_CENTER, 0, -4);
 
-    lv_obj_t *body = make_label(scr, &lv_font_montserrat_14, CLR_WHITE,
+    lv_obj_t *body = make_label(scr, &lv_font_montserrat_16, CLR_WHITE,
                                 "Remove all weight from the scale\nthen tap Continue.");
-    lv_obj_set_style_text_opa(body, LV_OPA_50, 0);
+    lv_obj_set_style_text_opa(body, LV_OPA_COVER, 0);
     lv_obj_set_style_text_align(body, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(body, LV_ALIGN_CENTER, 0, 26);
 
@@ -486,56 +486,59 @@ void display_show_cal_weight(void (*on_confirm)(float ref_g))
     lv_obj_t *scr;
     wiz_base(&scr, "2 / 3");
 
-    lv_obj_t *title = make_label(scr, &lv_font_montserrat_20, CLR_WHITE,
+    lv_obj_t *title = make_label(scr, &lv_font_montserrat_28, CLR_WHITE,
                                  "Place Reference Weight");
-    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 30);
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 10);
 
-    lv_obj_t *body = make_label(scr, &lv_font_montserrat_14, CLR_WHITE,
-                                "Put the known weight on the scale,\nthen dial in its mass below.");
-    lv_obj_set_style_text_opa(body, LV_OPA_50, 0);
+    lv_obj_t *body = make_label(scr, &lv_font_montserrat_16, CLR_WHITE,
+                                "Put a known weight on the scale,\nthen dial in its mass below.");
+    lv_obj_set_style_text_opa(body, LV_OPA_COVER, 0);
     lv_obj_set_style_text_align(body, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(body, LV_ALIGN_TOP_MID, 0, 64);
+    lv_obj_align(body, LV_ALIGN_TOP_MID, 0, 48);
 
-    // Selector row — centred
-    const int ADJ_D = 44;
+    // Selector row
+    // Layout (screen h=240, body ends ~y=92, confirm btn top ~y=176):
+    //   value centre  y=120+10=130  (36pt: top=112, bot=148)
+    //   buttons       y=120+10=130  (48px: top=106, bot=154)  x=±100
+    //   unit          y=120+10+26=156 (16pt: top=146, bot=166) → gap to btn=10
+    const int ADJ_D = 48;
+    const int SEL_Y = 10;
 
     // Minus button (circular)
     lv_obj_t *btn_m = lv_btn_create(scr);
     lv_obj_set_size(btn_m, ADJ_D, ADJ_D);
-    lv_obj_align(btn_m, LV_ALIGN_CENTER, -90, -4);
+    lv_obj_align(btn_m, LV_ALIGN_CENTER, -100, SEL_Y);
     lv_obj_set_style_bg_color(btn_m, CLR_WHITE, 0);
-    lv_obj_set_style_bg_opa(btn_m, LV_OPA_8, 0);
+    lv_obj_set_style_bg_opa(btn_m, LV_OPA_15, 0);
     lv_obj_set_style_border_color(btn_m, CLR_WHITE, 0);
-    lv_obj_set_style_border_opa(btn_m, LV_OPA_15, 0);
+    lv_obj_set_style_border_opa(btn_m, LV_OPA_40, 0);
     lv_obj_set_style_border_width(btn_m, 2, 0);
     lv_obj_set_style_radius(btn_m, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_shadow_width(btn_m, 0, 0);
     lv_obj_add_event_cb(btn_m, _minus_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_t *lm = make_label(btn_m, &lv_font_montserrat_28, CLR_WHITE, "-");
-    lv_obj_set_style_text_opa(lm, LV_OPA_70, 0);
     lv_obj_center(lm);
 
     // Value + unit
-    _weight_val_lbl = make_label(scr, &lv_font_montserrat_32, CLR_YELLOW, "2.0");
-    lv_obj_align(_weight_val_lbl, LV_ALIGN_CENTER, 0, -10);
-    _weight_unit_lbl = make_label(scr, &lv_font_montserrat_14, CLR_WHITE, "kilograms");
-    lv_obj_set_style_text_opa(_weight_unit_lbl, LV_OPA_40, 0);
-    lv_obj_align(_weight_unit_lbl, LV_ALIGN_CENTER, 0, 20);
+    _weight_val_lbl = make_label(scr, &lv_font_montserrat_36, CLR_YELLOW, "2.0");
+    lv_obj_align(_weight_val_lbl, LV_ALIGN_CENTER, 0, SEL_Y);
+    _weight_unit_lbl = make_label(scr, &lv_font_montserrat_16, CLR_WHITE, "kilograms");
+    lv_obj_set_style_text_opa(_weight_unit_lbl, LV_OPA_COVER, 0);
+    lv_obj_align(_weight_unit_lbl, LV_ALIGN_CENTER, 0, SEL_Y + 26);
 
     // Plus button (circular)
     lv_obj_t *btn_p = lv_btn_create(scr);
     lv_obj_set_size(btn_p, ADJ_D, ADJ_D);
-    lv_obj_align(btn_p, LV_ALIGN_CENTER, 90, -4);
+    lv_obj_align(btn_p, LV_ALIGN_CENTER, 100, SEL_Y);
     lv_obj_set_style_bg_color(btn_p, CLR_WHITE, 0);
-    lv_obj_set_style_bg_opa(btn_p, LV_OPA_8, 0);
+    lv_obj_set_style_bg_opa(btn_p, LV_OPA_15, 0);
     lv_obj_set_style_border_color(btn_p, CLR_WHITE, 0);
-    lv_obj_set_style_border_opa(btn_p, LV_OPA_15, 0);
+    lv_obj_set_style_border_opa(btn_p, LV_OPA_40, 0);
     lv_obj_set_style_border_width(btn_p, 2, 0);
     lv_obj_set_style_radius(btn_p, LV_RADIUS_CIRCLE, 0);
     lv_obj_set_style_shadow_width(btn_p, 0, 0);
     lv_obj_add_event_cb(btn_p, _plus_cb, LV_EVENT_CLICKED, NULL);
     lv_obj_t *lp = make_label(btn_p, &lv_font_montserrat_28, CLR_WHITE, "+");
-    lv_obj_set_style_text_opa(lp, LV_OPA_70, 0);
     lv_obj_center(lp);
 
     lv_obj_t *btn = wiz_pill_btn(scr, "Confirm", CLR_TEAL, CLR_WHITE);
@@ -554,10 +557,14 @@ void display_show_cal_done(float ref_g)
     lv_obj_t *scr;
     wiz_base(&scr, "3 / 3");
 
-    // Checkmark circle
-    const int D = 56;
+    // Done screen vertical layout (h=240, btn top=176):
+    //   circle  y=10  h=52  → bot=62
+    //   title   y=68  h=28  → bot=96
+    //   chip    y=104 h=32  → bot=136
+    //   body    y=144 h=20  → bot=164  gap to btn=12
+    const int D = 52;
     lv_obj_t *circle = make_panel(scr, CLR_TEAL,
-                                  (SCR_W - D) / 2, SCR_H / 2 - 70, D, D,
+                                  (SCR_W - D) / 2, 10, D, D,
                                   LV_RADIUS_CIRCLE);
     lv_obj_set_style_bg_opa(circle, LV_OPA_18, 0);
     lv_obj_set_style_border_color(circle, CLR_TEAL, 0);
@@ -566,8 +573,8 @@ void display_show_cal_done(float ref_g)
     lv_obj_t *check = make_label(circle, &lv_font_montserrat_20, CLR_TEAL, "OK");
     lv_obj_center(check);
 
-    lv_obj_t *title = make_label(scr, &lv_font_montserrat_20, CLR_WHITE, "Calibration Saved");
-    lv_obj_align(title, LV_ALIGN_CENTER, 0, -4);
+    lv_obj_t *title = make_label(scr, &lv_font_montserrat_28, CLR_WHITE, "Calibration Saved");
+    lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 68);
 
     // Reference chip
     char chip_buf[32];
@@ -576,22 +583,22 @@ void display_show_cal_done(float ref_g)
     else
         snprintf(chip_buf, sizeof(chip_buf), "Reference: %.0f g", ref_g);
 
-    const int CHIP_W = 200, CHIP_H = 28;
+    const int CHIP_W = 240, CHIP_H = 32;
     lv_obj_t *chip = make_panel(scr, CLR_TEAL,
-                                (SCR_W - CHIP_W) / 2, SCR_H / 2 + 20,
-                                CHIP_W, CHIP_H, 14);
+                                (SCR_W - CHIP_W) / 2, 104,
+                                CHIP_W, CHIP_H, 16);
     lv_obj_set_style_bg_opa(chip, LV_OPA_15, 0);
     lv_obj_set_style_border_color(chip, CLR_TEAL, 0);
     lv_obj_set_style_border_opa(chip, LV_OPA_30, 0);
     lv_obj_set_style_border_width(chip, 1, 0);
-    lv_obj_t *chip_lbl = make_label(chip, &lv_font_montserrat_14, CLR_TEAL, chip_buf);
+    lv_obj_t *chip_lbl = make_label(chip, &lv_font_montserrat_16, CLR_TEAL, chip_buf);
     lv_obj_center(chip_lbl);
 
-    lv_obj_t *body = make_label(scr, &lv_font_montserrat_14, CLR_WHITE,
+    lv_obj_t *body = make_label(scr, &lv_font_montserrat_16, CLR_WHITE,
                                 "Factor stored to NVS. Scale is ready.");
-    lv_obj_set_style_text_opa(body, LV_OPA_50, 0);
+    lv_obj_set_style_text_opa(body, LV_OPA_COVER, 0);
     lv_obj_set_style_text_align(body, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(body, LV_ALIGN_CENTER, 0, 62);
+    lv_obj_align(body, LV_ALIGN_TOP_MID, 0, 144);
 
     wiz_pill_btn(scr, "Done", CLR_YELLOW, CLR_DARK);
 
