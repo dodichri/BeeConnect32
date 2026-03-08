@@ -25,18 +25,13 @@ static bool _is_newer(const char *tag)
     return false;
 }
 
-static WiFiClientSecure _make_client()
-{
-    WiFiClientSecure c;
-    c.setInsecure();  // GitHub certs validated by release signature; CA pinning can be added later
-    return c;
-}
-
 // ── Step 1: query GitHub API ──────────────────────────────────────────────────
 
-static bool _fetch_release_info(String &out_tag, String &out_url)
+// Returns: 1 = ok, 0 = no releases (404), -1 = error
+static int _fetch_release_info(String &out_tag, String &out_url)
 {
-    WiFiClientSecure client = _make_client();
+    WiFiClientSecure client;
+    client.setInsecure();
     HTTPClient https;
     https.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
     https.setTimeout(10000);
@@ -45,14 +40,19 @@ static bool _fetch_release_info(String &out_tag, String &out_url)
 
     if (!https.begin(client, GITHUB_API_URL)) {
         Serial.println("[ota] begin() failed");
-        return false;
+        return -1;
     }
 
     int code = https.GET();
+    if (code == 404) {
+        Serial.println("[ota] No releases published yet — skipping OTA");
+        https.end();
+        return 0;
+    }
     if (code != 200) {
         Serial.printf("[ota] API returned HTTP %d\n", code);
         https.end();
-        return false;
+        return -1;
     }
 
     // Filter to only the fields we need — keeps heap usage low
@@ -68,7 +68,7 @@ static bool _fetch_release_info(String &out_tag, String &out_url)
 
     if (err) {
         Serial.printf("[ota] JSON error: %s\n", err.c_str());
-        return false;
+        return -1;
     }
 
     out_tag = doc["tag_name"].as<String>();
@@ -83,18 +83,19 @@ static bool _fetch_release_info(String &out_tag, String &out_url)
 
     if (out_tag.isEmpty() || out_url.isEmpty()) {
         Serial.println("[ota] Missing tag or asset in API response");
-        return false;
+        return -1;
     }
 
     Serial.printf("[ota] Latest: %s  Asset: %s\n", out_tag.c_str(), out_url.c_str());
-    return true;
+    return 1;
 }
 
 // ── Step 2: download and flash ────────────────────────────────────────────────
 
 static OtaResult _download_and_flash(const String &url)
 {
-    WiFiClientSecure client = _make_client();
+    WiFiClientSecure client;
+    client.setInsecure();
     HTTPClient dl;
     dl.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
     dl.setTimeout(30000);
@@ -168,7 +169,9 @@ OtaResult ota_check_and_update(void)
     Serial.println("[ota] Checking GitHub for updates...");
 
     String tag, url;
-    if (!_fetch_release_info(tag, url)) return OTA_FAILED;
+    int rc = _fetch_release_info(tag, url);
+    if (rc == 0) return OTA_UP_TO_DATE;  // no releases yet
+    if (rc < 0)  return OTA_FAILED;
 
     if (!_is_newer(tag.c_str())) {
         Serial.printf("[ota] Up to date (v%s)\n", FIRMWARE_VERSION);
